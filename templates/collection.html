@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Collection | Arika</title>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//netdna.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+  {% extends 'nav_layout.html' %}
+
+  {% block content %}<h1 class="stylised-header">Collection</h1>
+  <div class="row" style="margin-left: 6em;">
+    <p>Collection of items goes here</p>
+  </div>
+
+  {% endblock %}
+</body>
+
+</html>

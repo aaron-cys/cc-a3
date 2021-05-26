@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Login</title>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//netdna.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+  {% extends 'nav_layout.html' %}
+
+  {% block content %}
+  
+  <h1 class="align-head">Login</h1>
+
+  {% if error %}
+  <p class=error id="error-msg"><strong>Error:</strong> {{ error }}
+  {% endif %}
+
+  {% block body %}
+  <div class="row mt-4">
+    <div class="col"></div>
+    <div class="col">
+      <form method="POST">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" class="form-control" name="email" id="email" aria-describedby="email"
+            placeholder="Enter email" value="{{ request.form.email }}" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" class="form-control" name="password" id="password" placeholder="Enter password"
+            value="{{ request.form.password }}" required>
+        </div>
+        <p class="form-text text-muted">Don't have an account yet? <a id="minor-link-light" href="/signup">Register here</a></p>
+        <div class="text-center">
+          <button type="submit" class="btn btn-dark mt-4" id="sml-btn">Log In</button>
+        </div>
+      </form>
+    </div>
+    <div class="col"></div>
+  </div>
+  {% endblock %}
+  {% endblock %}
+
+</body>
+
+</html>

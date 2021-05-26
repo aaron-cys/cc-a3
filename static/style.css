@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Source+Sans+Pro:wght@300&display=swap');
+
+html, body {
+  margin: 1.5em 3em 6em 3em;
+}
+
+h1, h2, h3, h4, h5, a, p, ul, ol, li, label {
+  color: #303030;
+  font-family: 'Source Sans Pro', sans-serif;
+}
+
+#stylised-link {
+  color: #303030;
+  font-family: 'Source Sans Pro', sans-serif;
+  text-decoration: none;
+}
+
+#minor-link-light {
+  color: #759fa7;
+  font-family: 'Source Sans Pro', sans-serif;
+  text-decoration: none;
+}
+
+#minor-link {
+  color: #303030;
+  font-family: 'Source Sans Pro', sans-serif;
+  text-decoration: none;
+}
+
+.stylised-header {
+  text-align: left;
+  margin-top: 2em;
+  margin-left: 3em;
+  font-size: 32px;
+  font-family: 'Playfair Display', sans-serif;
+}
+
+.align-head {
+  text-align: center;
+  margin-top: 2em;
+  font-size: 28px;
+}
+
+.align-left {
+  text-align: left;
+  margin-top: 2em;
+  margin-left: 4.55em;
+  font-size: 28px;
+}
+
+#align-content {
+  margin-top: 2em;
+  margin-left: 5em;
+}
+
+#align-img {
+  margin-top: 2em;
+  margin-left: 8em;
+}
+
+#sml-btn {
+  padding: 5px 37px;
+  border-radius: 0px;
+}
+
+#large-btn {
+  padding: 5px 30px;
+  border-radius: 0px;
+}
+
+#error-msg {
+  text-align: center;
+  color: #db0000;
+  margin-top: 2em;
+}
