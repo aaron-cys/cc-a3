@@ -28,9 +28,8 @@ h1, h2, h3, h4, h5, a, p, ul, ol, li, label {
 }
 
 .stylised-header {
-  text-align: left;
+  text-align: center;
   margin-top: 2em;
-  margin-left: 8.7em;
   font-size: 36px;
   font-family: 'Playfair Display', sans-serif;
 }
@@ -83,7 +82,7 @@ h1, h2, h3, h4, h5, a, p, ul, ol, li, label {
 
 .col-product-table {
   width: 70%;
-  margin-top: 4em;
+  margin-top: 5em;
   table-layout: fixed;
   text-align: center;
   border-spacing: 0px 40px;

@@ -14,7 +14,9 @@
 <body>
   {% extends 'nav_layout.html' %}
 
-  {% block content %}<h1 class="stylised-header">Men</h1>
+  {% block content %}
+  
+  <h1 class="stylised-header">Men</h1>
   
   <table class="col-product-table">
     {% for row in product_list | batch(3) %}
