@@ -15,19 +15,26 @@
   {% extends 'nav_layout.html' %}
 
   {% block content %}
-  <h1 class="stylised-header">Spring Styles</h1>
-
+  
   <div class="text-center" style="margin-top: 4em;">
-    {% for p in product_list %}
-      {% if p['name'] == 'Chino Pants' %}
-        <img class="cover-img" src="{{ p['img_url'] }}">
-        <p class="mt-3"><strong>{{ p['name'] }}</strong></p>
-        <p style="margin-top: -1em;">${{ p['price'] }}.00</p>
-      {% endif %}
-    {% endfor %}
+    <table class="col-product-table">
+      {% for p in product_list %}
+        {% if p['popularity'] == 9 %}
+        <tr>
+          <td><img class="cover-img" src="{{ p['img_url'] }}"></td>
+          <td>
+            <div style="margin-top: -5em;">
+              <h1 class="stylised-header">/ {{ p['name'] }} /</p>
+              <p class="mt-1">${{ p['price'] }}.00</p>
+            </div>
+          </td>
+        </tr>
+        {% endif %}
+      {% endfor %}
+    </table>
   </div>
 
-  <h1 class="stylised-header" style="margin-top: 3em; margin-bottom: -1.5em;">New In</h1>
+  <h1 class="stylised-header" style="margin-top: 3em; margin-bottom: -1.5em;">/ New In /</h1>
 
   <table class="col-product-table">
     {% for row in new | batch(3) %}
