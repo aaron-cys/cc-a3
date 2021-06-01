@@ -27,6 +27,24 @@
     {% endfor %}
   </div>
 
+  <h1 class="stylised-header" style="margin-top: 3em; margin-bottom: -1.5em;">New In</h1>
+
+  <table class="col-product-table">
+    {% for row in new | batch(3) %}
+    <tr>
+      {% for n in row %}
+      {% if n['name'] %}
+        <td>
+          <img class="product-img" src="{{ n['img_url'] }}">
+          <p class="mt-3"><strong>{{ n['name'] }}</strong></p>
+          <p style="margin-top: -1em;">${{ n['price'] }}.00</p>
+        </td>
+      {% endif %}
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </table>
+
 
   <footer>
     <p>/ <a id="footer-header-link" href="/">Arika</a> /</p>

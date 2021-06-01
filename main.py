@@ -23,8 +23,9 @@ app.register_blueprint(collection)
 @app.route('/')
 def index():
     product_list = get_products()
+    new = get_new()
 
-    return render_template('index.html', product_list=product_list)
+    return render_template('index.html', product_list=product_list, new=new)
 
 # Login
 @app.route('/login', methods=['GET', 'POST'])
@@ -49,6 +50,18 @@ def get_products(dynamodb=None):
     table = dynamodb.Table('product')
     response = table.scan(
         FilterExpression=Attr('category').eq("Women") | Attr('category').eq("Men") | Attr('category').eq("New")
+    )
+    return response['Items']
+
+# Scan and get 'New' products from 'product' table
+def get_new(dynamodb=None):
+    if not dynamodb:
+        dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-2',
+        aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+
+    table = dynamodb.Table('product')
+    response = table.scan(
+        FilterExpression=Attr('category').eq("New")
     )
     return response['Items']
 
