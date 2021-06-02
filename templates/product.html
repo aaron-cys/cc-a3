@@ -17,20 +17,26 @@
   {% block content %}
 
   <div class="text-center" style="margin-top: 4em; margin-bottom: 10em;">
-    <table class="col-product-table">
-      {% for p in product_list %}
-        <tr>
-          <td><img class="cover-img" src="{{ p['img_url'] }}"></td>
-          <td>
-            <div style="margin-top: -5em;">
-              <h1 class="stylised-header">/ {{ p['name'] }} /</p>
-              <p class="mt-1">${{ p['price'] }}.00</p>
-              <a class="btn btn-outline-dark" id="add-btn" href="#">Add to bag</a>
-            </div>
-          </td>
-        </tr>
-      {% endfor %}
-    </table>
+    <form method="POST">
+      <table class="col-product-table">
+        {% for p in product_list %}
+          <tr>
+            <td><img class="cover-img" src="{{ p['img_url'] }}"></td>
+            <td>
+              <div style="margin-top: -5em;">
+                <h1 class="stylised-header">/ {{ p['name'] }} /</p>
+                <p class="mt-1">${{ p['price'] }}.00</p>
+                <div style="font-size: 17px; margin-top: 4em;">
+                  <p>Colour: {{ p['colour'] }}</p>
+                  <p>Quantity: </p>
+                </div>
+                <input type="submit" class="btn btn-outline-dark" id="add-btn" value="Add to bag" name="add" />
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
+    </form>
   </div>
 
   <footer>

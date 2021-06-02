@@ -92,6 +92,7 @@ h1, h2, h3, h4, h5, a, p, ul, ol, li, label {
   padding: 8px 38px;
   border-radius: 0px;
   margin-top: 2em;
+  font-family: 'Source Sans Pro', sans-serif;
 }
 
 /* Image Styling */
