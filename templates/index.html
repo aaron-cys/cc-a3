@@ -21,7 +21,7 @@
       {% for p in product_list %}
         {% if p['popularity'] == 9 %}
         <tr>
-          <td><img class="cover-img" src="{{ p['img_url'] }}"></td>
+          <td><a href="/product/{{ p['name'] }}"><img class="product-img" src="{{ p['img_url'] }}"></a></td>
           <td>
             <div style="margin-top: -5em;">
               <h1 class="stylised-header">/ {{ p['name'] }} /</p>
@@ -39,12 +39,12 @@
   <table class="col-product-table">
     {% for row in new | batch(3) %}
     <tr>
-      {% for n in row %}
-      {% if n['name'] %}
+      {% for p in row %}
+      {% if p['name'] %}
         <td>
-          <img class="product-img" src="{{ n['img_url'] }}">
-          <p class="mt-3"><strong>{{ n['name'] }}</strong></p>
-          <p style="margin-top: -1em;">${{ n['price'] }}.00</p>
+          <a href="/product/{{ p['name'] }}"><img class="product-img" src="{{ p['img_url'] }}"></a>
+          <p class="mt-3"><strong>{{ p['name'] }}</strong></p>
+          <p style="margin-top: -1em;">${{ p['price'] }}.00</p>
         </td>
       {% endif %}
       {% endfor %}

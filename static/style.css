@@ -70,6 +70,14 @@ h1, h2, h3, h4, h5, a, p, ul, ol, li, label {
   margin-left: 8em;
 }
 
+#error-msg {
+  text-align: center;
+  color: #db0000;
+  margin-top: 2em;
+}
+
+/* Button Styling */
+
 #sml-btn {
   padding: 5px 37px;
   border-radius: 0px;
@@ -80,9 +88,9 @@ h1, h2, h3, h4, h5, a, p, ul, ol, li, label {
   border-radius: 0px;
 }
 
-#error-msg {
-  text-align: center;
-  color: #db0000;
+#add-btn {
+  padding: 8px 38px;
+  border-radius: 0px;
   margin-top: 2em;
 }
 
