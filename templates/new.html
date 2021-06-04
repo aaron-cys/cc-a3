@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>Home | Arika</title>
+  <title>New | Arika</title>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
   <script src="//netdna.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
@@ -16,28 +16,10 @@
 
   {% block content %}
   
-  <div class="text-center" style="margin-top: 4em;">
-    <table class="col-product-table">
-      {% for p in product_list %}
-        {% if p['popularity'] == 9 %}
-        <tr>
-          <td><a href="/product/{{ p['name'] }}"><img class="product-img" src="{{ p['img_url'] }}"></a></td>
-          <td>
-            <div style="margin-top: -5em;">
-              <h1 class="stylised-header">/ {{ p['name'] }} /</h1>
-              <p class="mt-1">${{ p['price'] }}.00</p>
-            </div>
-          </td>
-        </tr>
-        {% endif %}
-      {% endfor %}
-    </table>
-  </div>
-
-  <h1 class="stylised-header" style="margin-top: 3em; margin-bottom: -1.5em;">/ New In /</h1>
-
+  <h1 class="stylised-header">/ New /</h1>
+  
   <table class="col-product-table">
-    {% for row in new | batch(3) %}
+    {% for row in product_list | batch(3) %}
     <tr>
       {% for p in row %}
       {% if p['name'] %}
@@ -52,7 +34,6 @@
     {% endfor %}
   </table>
 
-
   <footer>
     <p>/ <a id="footer-header-link" href="/">Arika</a> /</p>
     <a id="stylised-link" href="/collection">Collection&nbsp;&nbsp;/</a>
@@ -62,7 +43,6 @@
   </footer>
 
   {% endblock %}
-
 </body>
 
 </html>

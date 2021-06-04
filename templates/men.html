@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>Collection | Arika</title>
+  <title>Men | Arika</title>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
   <script src="//netdna.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
@@ -14,10 +14,33 @@
 <body>
   {% extends 'nav_layout.html' %}
 
-  {% block content %}<h1 class="stylised-header">Men</h1>
-  <div class="row" style="margin-left: 6em;">
-    <p>Men items goes here</p>
-  </div>
+  {% block content %}
+  
+  <h1 class="stylised-header">/ Men /</h1>
+  
+  <table class="col-product-table">
+    {% for row in product_list | batch(3) %}
+    <tr>
+      {% for p in row %}
+      {% if p['name'] %}
+        <td>
+          <a href="/product/{{ p['name'] }}"><img class="product-img" src="{{ p['img_url'] }}"></a>
+          <p class="mt-3"><strong>{{ p['name'] }}</strong></p>
+          <p style="margin-top: -1em;">${{ p['price'] }}.00</p>
+        </td>
+      {% endif %}
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </table>
+
+  <footer>
+    <p>/ <a id="footer-header-link" href="/">Arika</a> /</p>
+    <a id="stylised-link" href="/collection">Collection&nbsp;&nbsp;/</a>
+    <a id="stylised-link" href="/women">Women&nbsp;&nbsp;/</a>
+    <a id="stylised-link" href="/men">Men&nbsp;&nbsp;/</a>
+    <a id="stylised-link" href="/new">New</a>
+  </footer>
 
   {% endblock %}
 </body>
