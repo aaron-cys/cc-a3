@@ -2,58 +2,63 @@
 <html>
 
 <head>
-  <title>View | Arika</title>
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-  <script src="//netdna.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <title>View | Arika</title>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 
 <body>
-  {% extends 'nav_layout.html' %}
+    {% if u_session %}
+        {% extends 'nav_logged_in.html' %}
+    {% else %}
+        {% extends 'nav_layout.html' %}
+    {% endif %}
 
-  {% block content %}
+    {% block content %}
 
-  <div class="text-center" style="margin-top: 4em; margin-bottom: 10em;">
-    <form method="POST">
-      <table class="col-product-table">
-        {% for p in product_list %}
-          <tr>
-            <td><img class="cover-img" src="{{ p['img_url'] }}"></td>
-            <td>
-              <div style="margin-top: -5em;">
-                {% if message %}
-                  <p>{{ message }}</p>
-                {% endif %}
-                <h1 class="stylised-header">/ {{ p['name'] }} /</h1>
-                <p class="mt-1">${{ p['price'] }}.00</p>
-                <div style="font-size: 17px; margin-top: 3em;">
-                  <p>Colour: {{ p['colour'] }}</p>
-                  <p>Quantity: </p>
-                </div>
+    <div class="text-center" style="margin-top: 4em; margin-bottom: 10em;">
+        <form method="POST">
+            <table class="col-product-table">
+                {% for p in product_list %}
+                <tr>
+                    <td><img class="cover-img" src="{{ p['img_url'] }}"></td>
+                    <td>
+                        <div style="margin-top: -5em;">
+                            {% if message %}
+                            <p>{{ message }}</p>
+                            {% endif %}
+                            <h1 class="stylised-header">/ {{ p['name'] }} /</h1>
+                            <p class="mt-1">${{ p['price'] }}.00</p>
+                            <div style="font-size: 17px; margin-top: 3em;">
+                                <p>Colour: {{ p['colour'] }}</p>
+                                <p>Quantity: </p>
+                            </div>
 
-                <!-- Hidden Input -->
-                <input type="hidden" value="{{ p['name'] }}" name="product_name">
-                <input type="submit" class="btn btn-outline-dark" id="add-btn" value="Add to bag" name="add" />
-              </div>
-            </td>
-          </tr>
-        {% endfor %}
-      </table>
-    </form>
-  </div>
+                            <!-- Hidden Input -->
+                            <input type="hidden" value="{{ p['name'] }}" name="product_name">
+                            <input type="submit" class="btn btn-outline-dark" id="add-btn" value="Add to bag"
+                                name="add" />
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </form>
+    </div>
 
-  <footer>
-    <p>/ <a id="footer-header-link" href="/">Arika</a> /</p>
-    <a id="stylised-link" href="/collection">Collection&nbsp;&nbsp;/</a>
-    <a id="stylised-link" href="/women">Women&nbsp;&nbsp;/</a>
-    <a id="stylised-link" href="/men">Men&nbsp;&nbsp;/</a>
-    <a id="stylised-link" href="/new">New</a>
-  </footer>
+    <footer>
+        <p>/ <a id="footer-header-link" href="/">Arika</a> /</p>
+        <a id="stylised-link" href="/collection">Collection&nbsp;&nbsp;/</a>
+        <a id="stylised-link" href="/women">Women&nbsp;&nbsp;/</a>
+        <a id="stylised-link" href="/men">Men&nbsp;&nbsp;/</a>
+        <a id="stylised-link" href="/new">New</a>
+    </footer>
 
-  {% endblock %}
+    {% endblock %}
 </body>
 
 </html>
