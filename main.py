@@ -15,104 +15,7 @@ app.secret_key = "secretKey000"
 aws_access_key_id = "AKIAVQHEZJ6A4MBK2V5K"
 aws_secret_access_key = "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"
 
-
-# working sign up =================================================================================
-def signedUp(username, password, gname, fname, email, pnumber, address, valid):
-    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
-
-    try:
-        client.sign_up(
-            ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
-            Username=username,
-            Password=password,
-            UserAttributes=[
-                {
-                    'Name': 'given_name',
-                    'Value': gname
-                },
-                {
-                    'Name': 'family_name',
-                    'Value': fname
-                },
-                {
-                    'Name': 'email',
-                    'Value': email
-                },
-                {
-                    'Name': 'phone_number',
-                    'Value': pnumber
-                },
-                {
-                    'Name': 'address',
-                    'Value': address
-                }
-            ]
-        )
-        valid = True
-        return(valid == True)
-    except:
-        valid = False
-
-
-# sending confirmation ============================================================================
-def sendConfirmationCode():
-    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
-
-    username = "asoa2"
-
-    client.resend_confirmation_code(
-        ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
-        Username=username,
-    )
-
-
-# confirm =========================================================================================
-def confirm(username, code):
-    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
-
-    client.confirm_sign_up(
-        ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
-        Username=username,
-        ConfirmationCode=code
-    )
-
-
-# login ===========================================================================================
-def loggedIn(username, password, valid):
-    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
-
-    try:
-        client.initiate_auth(
-            ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
-            AuthFlow='USER_PASSWORD_AUTH',
-            AuthParameters={
-                'USERNAME': username,
-                'PASSWORD': password
-            }
-        )
-        valid = True
-        return(valid == True)
-    except:
-        valid = False
-
-
-# get user ========================================================================================
-def getUser(access_token):
-
-    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
-
-    response = client.get_user(
-        AccessToken=access_token
-    )
-
-    attr_sub = None
-    for attr in response['UserAttributes']:
-        if attr['Name'] == 'sub':
-            attr_sub = attr['Value']
-            break
-
-    print('UserSub', attr_sub)
-
+# Routes ========================================================================================
 
 # Check if user is logged in or not
 def check_user_session():
@@ -142,7 +45,7 @@ def login():
     error = None
     valid = False
 
-    # get the data from the form
+    # Get the data from the form
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
@@ -161,7 +64,7 @@ def signup():
     error = None
     valid = False
 
-    # get the data from the form
+    # Get the data from the form
     if request.method == "POST":
         username = request.form["username"]
         gname = request.form["gname"]
@@ -255,6 +158,106 @@ def bag():
         error = "Bag is currently empty."
         return render_template('bag.html', u_session=u_session, error=error, total=total)
 
+
+# Working sign up =================================================================================
+def signedUp(username, password, gname, fname, email, pnumber, address, valid):
+    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
+
+    try:
+        client.sign_up(
+            ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
+            Username=username,
+            Password=password,
+            UserAttributes=[
+                {
+                    'Name': 'given_name',
+                    'Value': gname
+                },
+                {
+                    'Name': 'family_name',
+                    'Value': fname
+                },
+                {
+                    'Name': 'email',
+                    'Value': email
+                },
+                {
+                    'Name': 'phone_number',
+                    'Value': pnumber
+                },
+                {
+                    'Name': 'address',
+                    'Value': address
+                }
+            ]
+        )
+        valid = True
+        return(valid == True)
+    except:
+        valid = False
+
+
+# Sending confirmation ============================================================================
+def sendConfirmationCode():
+    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
+
+    username = "asoa2"
+
+    client.resend_confirmation_code(
+        ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
+        Username=username,
+    )
+
+
+# Confirm =========================================================================================
+def confirm(username, code):
+    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
+
+    client.confirm_sign_up(
+        ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
+        Username=username,
+        ConfirmationCode=code
+    )
+
+
+# Check logged in =================================================================================
+def loggedIn(username, password, valid):
+    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
+
+    try:
+        client.initiate_auth(
+            ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
+            AuthFlow='USER_PASSWORD_AUTH',
+            AuthParameters={
+                'USERNAME': username,
+                'PASSWORD': password
+            }
+        )
+        valid = True
+        return(valid == True)
+    except:
+        valid = False
+
+
+# Get user ========================================================================================
+def getUser(access_token):
+
+    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
+
+    response = client.get_user(
+        AccessToken=access_token
+    )
+
+    attr_sub = None
+    for attr in response['UserAttributes']:
+        if attr['Name'] == 'sub':
+            attr_sub = attr['Value']
+            break
+
+    print('UserSub', attr_sub)
+
+
+# Products DB =====================================================================================
 
 # Scan and get products from 'product' table by NAME
 def get_products_by_name(name, dynamodb=None):
