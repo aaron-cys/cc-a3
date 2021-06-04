@@ -150,8 +150,8 @@ def bag():
 
         if request.method == 'POST':
             if 'remove' in request.form:
-                session.clear()
-                return redirect(url_for('collection.bag', u_session=u_session, error=error))
+                session.pop('bag', None)
+                return redirect(url_for('bag', u_session=u_session, error=error))
 
         return render_template('bag.html', u_session=u_session, error=error, total=total, bag=bag, product_list=product_list)
     else:
