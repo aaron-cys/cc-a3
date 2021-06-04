@@ -22,133 +22,136 @@ app.register_blueprint(collection)
 
 # working sign up =================================================================================
 def signUp(username, password, gname, fname, email, pnumber, address, valid):
-  client=boto3.client('cognito-idp', region_name='ap-southeast-2')
-  
-  try:
-    client.sign_up(
-      ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
-      Username = username,
-      Password = password,
-      UserAttributes=[
-          {
-              'Name': 'given_name',
-              'Value': gname
-          },
-          {
-              'Name': 'family_name',
-              'Value': fname
-          },
-          {
-              'Name': 'email',
-              'Value': email
-          },
-          {
-              'Name': 'phone_number',
-              'Value': pnumber
-          },
-          {
-              'Name': 'address',
-              'Value': address
-          }
-      ]
-    )
-    valid = True
-    return(valid==True)
-  except:
-    valid = False
- 
+    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
+
+    try:
+        client.sign_up(
+            ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
+            Username=username,
+            Password=password,
+            UserAttributes=[
+                {
+                    'Name': 'given_name',
+                    'Value': gname
+                },
+                {
+                    'Name': 'family_name',
+                    'Value': fname
+                },
+                {
+                    'Name': 'email',
+                    'Value': email
+                },
+                {
+                    'Name': 'phone_number',
+                    'Value': pnumber
+                },
+                {
+                    'Name': 'address',
+                    'Value': address
+                }
+            ]
+        )
+        valid = True
+        return(valid == True)
+    except:
+        valid = False
 
 
 # sending confirmation ============================================================================
 def sendConfirmationCode():
-  client=boto3.client('cognito-idp', region_name='ap-southeast-2')
-  
-  username = "asoa2"
-  
-  client.resend_confirmation_code(
-    ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
-    Username = username,
-  )
-  
-  
+    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
+
+    username = "asoa2"
+
+    client.resend_confirmation_code(
+        ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
+        Username=username,
+    )
+
+
 # confirm =========================================================================================
 def confirm(username, code):
-  client=boto3.client('cognito-idp', region_name='ap-southeast-2')
-  
-  client.confirm_sign_up(
-    ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
-    Username = username,
-    ConfirmationCode = code
-  )
-    
+    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
+
+    client.confirm_sign_up(
+        ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
+        Username=username,
+        ConfirmationCode=code
+    )
 
 
 # login ===========================================================================================
 def logIn(username, password, valid):
-  client = boto3.client('cognito-idp', region_name='ap-southeast-2')
-  
-  try:
-    client.initiate_auth(
-      ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
-      AuthFlow='USER_PASSWORD_AUTH',
-      AuthParameters={
-        'USERNAME':username,
-        'PASSWORD':password
-      }
-    )
-    valid = True
-    return(valid==True)
-  except:
-    valid = False
+    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
+
+    try:
+        client.initiate_auth(
+            ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
+            AuthFlow='USER_PASSWORD_AUTH',
+            AuthParameters={
+                'USERNAME': username,
+                'PASSWORD': password
+            }
+        )
+        valid = True
+        return(valid == True)
+    except:
+        valid = False
 
 # get user ========================================================================================
+
+
 def getUser(access_token):
-  
-  client = boto3.client('cognito-idp', region_name='ap-southeast-2')
 
-  response = client.get_user(
-    AccessToken = access_token
-  )
+    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
 
-  attr_sub = None
-  for attr in response['UserAttributes']:
-    if attr['Name'] == 'sub':
-      attr_sub = attr['Value']
-      break
-    
-  print('UserSub', attr_sub)
-  
-  
+    response = client.get_user(
+        AccessToken=access_token
+    )
 
-# Index 
+    attr_sub = None
+    for attr in response['UserAttributes']:
+        if attr['Name'] == 'sub':
+            attr_sub = attr['Value']
+            break
+
+    print('UserSub', attr_sub)
+
+
+# Index
 @app.route('/')
 def index():
     return render_template('index.html')
 
 # Login
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
     valid = False
-    
+
     # get the data from the form
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
         if(logIn(username, password, valid)):
-          return redirect(url_for("index"))
+            return redirect(url_for("index"))
         else:
-          error = "Incorrect Username or Password"
-          return render_template('login.html', error=error)
+            error = "Incorrect Username or Password"
+            return render_template('login.html', error=error)
 
     return render_template('login.html')
 
 # Sign up
+
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     error = None
     valid = False
-  
+
     # get the data from the form
     if request.method == "POST":
         username = request.form["username"]
@@ -158,15 +161,16 @@ def signup():
         pnumber = request.form["pnumber"]
         address = request.form["address"]
         password = request.form["password"]
-        print("precheck: ",valid)
+        print("precheck: ", valid)
         if(signUp(username, password, gname, fname, email, pnumber, address, valid)):
-          return redirect(url_for("login"))
+            return redirect(url_for("login"))
         else:
-          print("else: ",valid)
-          error = "There was an error"
-          return render_template('signup.html', error=error)
-        
+            print("else: ", valid)
+            error = "There was an error"
+            return render_template('signup.html', error=error)
+
     return render_template('signup.html', error=error)
+
 
 # Run App
 if __name__ == "__main__":
