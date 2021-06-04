@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>Home | Arika</title>
+  <title>Bag | Arika</title>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
   <script src="//netdna.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
@@ -16,42 +16,42 @@
 
   {% block content %}
   
-  <div class="text-center" style="margin-top: 4em;">
-    <table class="col-product-table">
+  <h1 class="stylised-header-left">/ Bag /</h1>
+
+  {% if error %}
+    <p style="margin-left: 11.5em; margin-top: 2em; margin-bottom: 24.5em;">{{ error }}
+  {% endif %}
+
+  {% if bag %}
+  <form method="POST">
+    <input type="submit" class="btn btn-outline-dark" id="remove-btn" value="Empty bag" name="remove" />
+  </form>
+
+  <div class="row" style="margin-top: 7em; margin-bottom: -15em;">
+    <div class="col"></div>
+    <div class="col"></div>
+    <div class="col">
+      <p id="sub-header">/ Order Summary /</p>
+      <h5><strong style="margin-right: 4.3em;">Total:</strong> ${{ total }}.00</h5>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="text-center">
+    <table class="bag-table">
       {% for p in product_list %}
-        {% if p['popularity'] == 9 %}
         <tr>
-          <td><a href="/product/{{ p['name'] }}"><img class="product-img" src="{{ p['img_url'] }}"></a></td>
+          <td><a href="/product/{{ p[0]['name'] }}"><img class="bag-img" src="{{ p[0]['img_url'] }}"></a></td>
           <td>
-            <div style="margin-top: -5em;">
-              <h1 class="stylised-header">/ {{ p['name'] }} /</h1>
-              <p class="mt-1">${{ p['price'] }}.00</p>
+            <div style="font-size: 18px;">
+              <p style="font-weight: 600;">{{ p[0]['name'] }}</p>
+              <p style="margin-top: -1em;">${{ p[0]['price'] }}.00</p>
             </div>
           </td>
         </tr>
-        {% endif %}
       {% endfor %}
     </table>
   </div>
-
-  <h1 class="stylised-header" style="margin-top: 3em; margin-bottom: -1.5em;">/ New In /</h1>
-
-  <table class="col-product-table">
-    {% for row in new | batch(3) %}
-    <tr>
-      {% for p in row %}
-      {% if p['name'] %}
-        <td>
-          <a href="/product/{{ p['name'] }}"><img class="product-img" src="{{ p['img_url'] }}"></a>
-          <p class="mt-3"><strong>{{ p['name'] }}</strong></p>
-          <p style="margin-top: -1em;">${{ p['price'] }}.00</p>
-        </td>
-      {% endif %}
-      {% endfor %}
-    </tr>
-    {% endfor %}
-  </table>
-
 
   <footer>
     <p>/ <a id="footer-header-link" href="/">Arika</a> /</p>
@@ -62,7 +62,6 @@
   </footer>
 
   {% endblock %}
-
 </body>
 
 </html>

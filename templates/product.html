@@ -24,12 +24,18 @@
             <td><img class="cover-img" src="{{ p['img_url'] }}"></td>
             <td>
               <div style="margin-top: -5em;">
-                <h1 class="stylised-header">/ {{ p['name'] }} /</p>
+                {% if message %}
+                  <p>{{ message }}</p>
+                {% endif %}
+                <h1 class="stylised-header">/ {{ p['name'] }} /</h1>
                 <p class="mt-1">${{ p['price'] }}.00</p>
-                <div style="font-size: 17px; margin-top: 4em;">
+                <div style="font-size: 17px; margin-top: 3em;">
                   <p>Colour: {{ p['colour'] }}</p>
                   <p>Quantity: </p>
                 </div>
+
+                <!-- Hidden Input -->
+                <input type="hidden" value="{{ p['name'] }}" name="product_name">
                 <input type="submit" class="btn btn-outline-dark" id="add-btn" value="Add to bag" name="add" />
               </div>
             </td>

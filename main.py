@@ -4,7 +4,6 @@ from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Key, Attr
 from decimal import Decimal
 import boto3
-import json
 import logging
 import urllib.request
 from pathlib import Path

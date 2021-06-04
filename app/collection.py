@@ -48,9 +48,46 @@ def new():
 # Individual product page
 @collection.route('/product/<product_name>', methods=['GET', 'POST'])
 def product(product_name):
+    message = None
     product_list = get_products_by_name(product_name)
-    return render_template('product.html', product_name=product_name, product_list=product_list)
 
+    if request.method == 'POST':
+        if 'bag' not in session:
+            session['bag'] = []
+        bag = session['bag']
+        bag.append(request.form['product_name'])
+        session['bag'] = bag
+        message = "Successfully added to bag!"
+        return render_template('product.html', message=message, product_name=product_name, product_list=product_list, bag=bag)
+    else:
+        return render_template('product.html', message=message, product_name=product_name, product_list=product_list)
+    
+# Bag/cart page
+@collection.route('/bag', methods=['GET', 'POST'])
+def bag():
+    error = None
+    total = 0
+
+    if 'bag' in session:
+        bag = session['bag']
+        product_list = []
+        for product in bag:
+            p_list = product_list
+            p_list.append(get_products_by_name(product))
+            product_list = p_list
+
+        for p in product_list:
+            total += int(p[0]['price'])
+
+        if request.method == 'POST':
+            if 'remove' in request.form:
+                session.clear()
+                return redirect(url_for('collection.bag', error=error))
+
+        return render_template('bag.html', error=error, total=total, bag=bag, product_list=product_list)
+    else:
+        error = "Bag is currently empty."
+        return render_template('bag.html', error=error, total=total)
 
 
 
