@@ -133,6 +133,7 @@ def product(product_name):
     else:
         return render_template('product.html', u_session=u_session, message=message, product_name=product_name, product_list=product_list)
 
+
 # Bag/cart page
 @app.route('/bag', methods=['GET', 'POST'])
 def bag():
@@ -151,6 +152,7 @@ def bag():
 
         for p in product_list:
             total += int(p[0]['price'])
+            session['total'] = total * 100
 
         if request.method == 'POST':
             if 'remove' in request.form:
@@ -167,15 +169,17 @@ def bag():
 @app.route('/create-stripe-session', methods=['POST'])
 def create_stripe_session():
 
+    total = session.get('total', None)
+
     stripe_session = stripe.checkout.Session.create(
         payment_method_types=['card'],
         line_items=[{
         'price_data': {
             'currency': 'aud',
             'product_data': {
-            'name': 'Arika products',
+            'name': 'Arika',
             },
-            'unit_amount': 2000,
+            'unit_amount': total,
         },
         'quantity': 1,
         }],
@@ -190,6 +194,8 @@ def create_stripe_session():
 @app.route('/success')
 def success():
     u_session = check_user_session()
+    session.pop('bag', None)
+    session.pop('total', None)
     return render_template('success.html', u_session=u_session)
 
 
