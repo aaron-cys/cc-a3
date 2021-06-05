@@ -43,44 +43,84 @@ def logout():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
-    valid = False
+    valid = "false"
+        
+    if "user" in session:
+        return redirect(url_for("index"))
+    else:
+        # get the data from the form
+        if request.method == "POST":
+            username = request.form["username"]
+            password = request.form["password"]
+            logged = loggedIn(username, password, valid, error)
+            if(logged[0:] == "true"):
+                session['user'] = username
+                return redirect(url_for("index"))
+            else:
+                errorString = str(logged)
+                stringStrip = errorString.strip("()")
+                esplit = stringStrip.split(', ')[1]
+                error = esplit.strip("'")
+                return render_template('login.html', error=error)
 
-    # Get the data from the form
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        if (loggedIn(username, password, valid)):
-            session['user'] = username
-            return redirect(url_for("index"))
-        else:
-            error = "Incorrect Username or Password"
-            return render_template('login.html', error=error)
-
-    return render_template('login.html')
+        return render_template('login.html')
 
 # Sign up
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     error = None
-    valid = False
+    valid = "false"
+        
+    if "user" in session:
+        return redirect(url_for("index"))
+    else:
+        # get the data from the form
+        if request.method == "POST":
+            username = request.form["username"]
+            gname = request.form["gname"]
+            fname = request.form["fname"]
+            email = request.form["email"]
+            pnumber = request.form["pnumber"]
+            address = request.form["address"]
+            password = request.form["password"]
+            logged = signedUp(username, password, gname, fname, email, pnumber, address, valid, error)
+            if(logged[0:] == "true"):
+                return redirect(url_for("confirm"))
+            else:
+                errorString = str(logged)
+                stringStrip = errorString.strip("()")
+                esplit = stringStrip.split(', ')[1]
+                error = esplit.strip("'")
+                return render_template('signup.html', error=error)
 
-    # Get the data from the form
-    if request.method == "POST":
-        username = request.form["username"]
-        gname = request.form["gname"]
-        fname = request.form["fname"]
-        email = request.form["email"]
-        pnumber = request.form["pnumber"]
-        address = request.form["address"]
-        password = request.form["password"]
+        return render_template('signup.html', error=error)
 
-        if (signedUp(username, password, gname, fname, email, pnumber, address, valid)):
-            return redirect(url_for("login"))
-        else:
-            error = "Username already exists"
-            return render_template('signup.html', error=error)
 
-    return render_template('signup.html', error=error)
+# Confirm
+@app.route('/confirmation', methods=['GET', 'POST'])
+def confirm():
+    error = None
+    valid = "false"
+
+    if "user" in session:
+        return redirect(url_for("index"))
+    else:
+        # get the data from the form
+        if request.method == "POST":
+            username = request.form["user"]
+            code = request.form["code"]
+            logged = userConfirm(username, code, valid, error)
+            if(logged[0:] == "true"):
+                return redirect(url_for("login"))
+            else:
+                errorString = str(logged)
+                stringStrip = errorString.strip("()")
+                esplit = stringStrip.split(', ')[1]
+                error = esplit.strip("'")
+                return render_template('confirm.html', error=error)
+
+        return render_template('confirm.html', error=error)
+
 
 # Collection category page
 @app.route('/collection')
@@ -159,8 +199,8 @@ def bag():
         return render_template('bag.html', u_session=u_session, error=error, total=total)
 
 
-# Working sign up =================================================================================
-def signedUp(username, password, gname, fname, email, pnumber, address, valid):
+# Signing up =================================================================================
+def signedUp(username, password, gname, fname, email, pnumber, address, valid, error):
     client = boto3.client('cognito-idp', region_name='ap-southeast-2')
 
     try:
@@ -191,37 +231,33 @@ def signedUp(username, password, gname, fname, email, pnumber, address, valid):
                 }
             ]
         )
-        valid = True
-        return(valid == True)
-    except:
-        valid = False
+        valid = "true"
+        return valid
+    except Exception as e:
+        ex= str(e)
+        error = ex.split(": ",1)[1]
+        return valid, error
+    
 
-
-# Sending confirmation ============================================================================
-def sendConfirmationCode():
+# confirmation =========================================================================================
+def userConfirm(username, code, valid, error):
     client = boto3.client('cognito-idp', region_name='ap-southeast-2')
 
-    username = "asoa2"
-
-    client.resend_confirmation_code(
-        ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
-        Username=username,
-    )
-
-
-# Confirm =========================================================================================
-def confirm(username, code):
-    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
-
-    client.confirm_sign_up(
-        ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
-        Username=username,
-        ConfirmationCode=code
-    )
-
+    try:
+        client.confirm_sign_up(
+            ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
+            Username=username,
+            ConfirmationCode=code
+        )
+        valid = "true"
+        return valid
+    except Exception as e:
+        ex = str(e)
+        error = ex.split(": ",1)[1]
+        return valid, error
 
 # Check logged in =================================================================================
-def loggedIn(username, password, valid):
+def loggedIn(username, password, valid, error):
     client = boto3.client('cognito-idp', region_name='ap-southeast-2')
 
     try:
@@ -233,28 +269,12 @@ def loggedIn(username, password, valid):
                 'PASSWORD': password
             }
         )
-        valid = True
-        return(valid == True)
-    except:
-        valid = False
-
-
-# Get user ========================================================================================
-def getUser(access_token):
-
-    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
-
-    response = client.get_user(
-        AccessToken=access_token
-    )
-
-    attr_sub = None
-    for attr in response['UserAttributes']:
-        if attr['Name'] == 'sub':
-            attr_sub = attr['Value']
-            break
-
-    print('UserSub', attr_sub)
+        valid = "true"
+        return valid
+    except Exception as e:
+        ex = str(e)
+        error = ex.split(": ",1)[1]
+        return valid, error
 
 
 # Products DB =====================================================================================
