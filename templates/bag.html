@@ -3,6 +3,7 @@
 
 <head>
     <title>Bag | Arika</title>
+    <script src="https://js.stripe.com/v3/"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
@@ -13,9 +14,9 @@
 
 <body>
     {% if u_session %}
-        {% extends 'nav_logged_in.html' %}
+    {% extends 'nav_logged_in.html' %}
     {% else %}
-        {% extends 'nav_layout.html' %}
+    {% extends 'nav_layout.html' %}
     {% endif %}
 
     {% block content %}
@@ -37,6 +38,15 @@
         <div class="col">
             <p id="sub-header">/ Order Summary /</p>
             <h5><strong style="margin-right: 4.3em;">Total:</strong> ${{ total }}.00</h5>
+            <!-- <form method="POST" name="stripe">
+                <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                data-key="{{ key }}"
+                data-description="Stripe Test"
+                data-amount="500"
+                data-locale="auto"></script>
+            </form> -->
+
+            <button class="btn btn-outline-dark mt-5" id="stripe-btn">Pay with Stripe</button>
         </div>
     </div>
     {% endif %}
@@ -64,6 +74,43 @@
         <a id="stylised-link" href="/men">Men&nbsp;&nbsp;/</a>
         <a id="stylised-link" href="/new">New</a>
     </footer>
+
+    <!-- Scripts -->
+
+    <script type="text/javascript">
+        // Create an instance of the Stripe object with your publishable API key
+        var stripe = Stripe('pk_test_51HZWy0GvdcoiAyvVMva45A1r74HoaKNxFilbka1JYWZuM0Aa124a9kHyBdi84L7EwUlxnXZ9d8e57LXhlyZOz9zf00XZva9tAf');
+        var checkoutButton = document.getElementById('stripe-btn');
+
+        checkoutButton.addEventListener('click', function () {
+            // Create a new Checkout Session using the server-side endpoint you
+            // created in step 3.
+            fetch('/create-stripe-session', {
+                method: 'POST',
+            })
+                .then(function (response) {
+                    console.log("RESPONSE")
+                    console.log(response)
+                    return response.json();
+                })
+                .then(function (session) {
+                    console.log("SESSION")
+                    console.log(session)
+                    return stripe.redirectToCheckout({ sessionId: session.sessionId });
+                })
+                .then(function (result) {
+                    // If `redirectToCheckout` fails due to a browser or network
+                    // error, you should display the localized error message to your
+                    // customer using `error.message`.
+                    if (result.error) {
+                        alert(result.error.message);
+                    }
+                })
+                .catch(function (error) {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
 
     {% endblock %}
 </body>

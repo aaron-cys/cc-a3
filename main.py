@@ -1,6 +1,6 @@
 from botocore.client import ClientMeta
 from botocore.vendored.six import assertCountEqual
-from flask import Flask, render_template, session, redirect, url_for, request, Blueprint
+from flask import Flask, render_template, session, redirect, url_for, request, Blueprint, jsonify
 from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Key, Attr
 from decimal import Decimal
@@ -9,11 +9,14 @@ import logging
 import urllib.request
 from pathlib import Path
 import botocore
+import stripe
 
 app = Flask(__name__)
 app.secret_key = "secretKey000"
 aws_access_key_id = "AKIAVQHEZJ6A4MBK2V5K"
 aws_secret_access_key = "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"
+pk = "pk_test_51HZWy0GvdcoiAyvVMva45A1r74HoaKNxFilbka1JYWZuM0Aa124a9kHyBdi84L7EwUlxnXZ9d8e57LXhlyZOz9zf00XZva9tAf"
+stripe.api_key = "sk_test_51HZWy0GvdcoiAyvVu8NzEmoMEA2s8RyR2fpNPeP4DGxOzziuTDvsvmUuwG3YgUhEgPgeqvLnLNLf3QAUXLCq6rpT00pr221LWg"
 
 # Routes ========================================================================================
 
@@ -134,6 +137,7 @@ def product(product_name):
 @app.route('/bag', methods=['GET', 'POST'])
 def bag():
     u_session = check_user_session()
+    key = pk
     error = None
     total = 0
 
@@ -153,10 +157,40 @@ def bag():
                 session.pop('bag', None)
                 return redirect(url_for('bag', u_session=u_session, error=error))
 
-        return render_template('bag.html', u_session=u_session, error=error, total=total, bag=bag, product_list=product_list)
+        return render_template('bag.html', u_session=u_session, key=key, error=error, total=total, bag=bag, product_list=product_list)
     else:
         error = "Bag is currently empty."
         return render_template('bag.html', u_session=u_session, error=error, total=total)
+
+
+# Create Stripe session
+@app.route('/create-stripe-session', methods=['POST'])
+def create_stripe_session():
+
+    stripe_session = stripe.checkout.Session.create(
+        payment_method_types=['card'],
+        line_items=[{
+        'price_data': {
+            'currency': 'aud',
+            'product_data': {
+            'name': 'Arika products',
+            },
+            'unit_amount': 2000,
+        },
+        'quantity': 1,
+        }],
+        mode='payment',
+        success_url='http://127.0.0.1:8080/success.html',
+        cancel_url='http://127.0.0.1:8080/bag',
+    )
+    return jsonify({"sessionId": stripe_session["id"]})
+
+
+# Success
+@app.route('/success')
+def success():
+    u_session = check_user_session()
+    return render_template('success.html', u_session=u_session)
 
 
 # Working sign up =================================================================================
