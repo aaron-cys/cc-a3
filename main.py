@@ -180,7 +180,7 @@ def create_stripe_session():
         'quantity': 1,
         }],
         mode='payment',
-        success_url='http://127.0.0.1:8080/success.html',
+        success_url='http://127.0.0.1:8080/success',
         cancel_url='http://127.0.0.1:8080/bag',
     )
     return jsonify({"sessionId": stripe_session["id"]})
