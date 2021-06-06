@@ -1,25 +1,47 @@
-from botocore.client import ClientMeta
-from botocore.vendored.six import assertCountEqual
-from flask import Flask, render_template, session, redirect, url_for, request, Blueprint
-from botocore.exceptions import ClientError
-from boto3.dynamodb.conditions import Key, Attr
-from decimal import Decimal
-import boto3
 import logging
+import os
 import urllib.request
+from decimal import Decimal
 from pathlib import Path
+
+import boto3
 import botocore
+import google.auth.transport.requests
+import requests
+from boto3.compat import filter_python_deprecation_warnings
+from boto3.dynamodb.conditions import Attr, Key
+from botocore import credentials
+from botocore.client import ClientMeta
+from botocore.exceptions import ClientError
+from botocore.vendored.six import assertCountEqual
+from flask import *
+from google.oauth2 import id_token
+from google_auth_oauthlib.flow import Flow
+from pip._vendor import cachecontrol
 
 app = Flask(__name__)
 app.secret_key = "secretKey000"
 aws_access_key_id = "AKIAVQHEZJ6A4MBK2V5K"
 aws_secret_access_key = "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"
 
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
+google_client_id = "1032499516768-35kg0d0fbfu1paqgei4tgdb1i76c7kh6.apps.googleusercontent.com"
+google_client_secret = os.path.join(Path(__file__).parent, "static/arika_google.json")
+flow = Flow.from_client_secrets_file(
+    client_secrets_file=google_client_secret,
+    scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
+    redirect_uri="http://127.0.0.1:8080/callback"
+                                     )
+
+
 # Routes ========================================================================================
 
 # Check if user is logged in or not
 def check_user_session():
     if 'user' in session:
+        return True
+    elif 'google_id' in session:
         return True
     else:
         return False
@@ -50,20 +72,52 @@ def login():
     else:
         # get the data from the form
         if request.method == "POST":
-            username = request.form["username"]
-            password = request.form["password"]
-            logged = loggedIn(username, password, valid, error)
-            if(logged[0:] == "true"):
-                session['user'] = username
-                return redirect(url_for("index"))
-            else:
-                errorString = str(logged)
-                stringStrip = errorString.strip("()")
-                esplit = stringStrip.split(', ')[1]
-                error = esplit.strip("'")
-                return render_template('login.html', error=error)
-
+            if "login" in request.form:
+                username = request.form["username"]
+                password = request.form["password"]
+                logged = loggedIn(username, password, valid, error)
+                if(logged[0:] == "true"):
+                    session['user'] = username
+                    return redirect(url_for("index"))
+                else:
+                    errorString = str(logged)
+                    stringStrip = errorString.strip("()")
+                    esplit = stringStrip.split(', ')[1]
+                    error = esplit.strip("'")
+                    return render_template('login.html', error=error)
+            
+            # Google login redirect
+            if "google" in request.form:
+                authorization_url, state = flow.authorization_url()
+                session["state"] = state
+                return redirect(authorization_url)
+                
+        
         return render_template('login.html')
+
+
+# Google call back
+@app.route("/callback")
+def gcallback():
+    flow.fetch_token(authorization_response=request.url)
+
+    if not session["state"] == request.args["state"]:
+        abort(500)
+
+    credentials = flow.credentials
+    request_session = requests.session()
+    cached_session = cachecontrol.CacheControl(request_session)
+    token_request = google.auth.transport.requests.Request(session=cached_session)
+
+    id_info = id_token.verify_oauth2_token(
+        id_token=credentials._id_token,
+        request=token_request,
+        audience=google_client_id
+    )
+
+    session["google_id"] = id_info.get("sub")
+    session["name"] = id_info.get("name")
+    return redirect(url_for("index"))
 
 # Sign up
 @app.route('/signup', methods=['GET', 'POST'])
@@ -92,6 +146,7 @@ def signup():
                 esplit = stringStrip.split(', ')[1]
                 error = esplit.strip("'")
                 return render_template('signup.html', error=error)
+
 
         return render_template('signup.html', error=error)
 
@@ -275,7 +330,6 @@ def loggedIn(username, password, valid, error):
         ex = str(e)
         error = ex.split(": ",1)[1]
         return valid, error
-
 
 # Products DB =====================================================================================
 
