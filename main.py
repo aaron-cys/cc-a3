@@ -10,13 +10,26 @@ import urllib.request
 from pathlib import Path
 import botocore
 import stripe
+from paypalcheckoutsdk.core import PayPalHttpClient, SandboxEnvironment
+from paypalcheckoutsdk.orders import OrdersCreateRequest
+from paypalhttp import HttpError
 
 app = Flask(__name__)
 app.secret_key = "secretKey000"
+
+# AWS Keys
 aws_access_key_id = "AKIAVQHEZJ6A4MBK2V5K"
 aws_secret_access_key = "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"
+
+# Stripe Keys
 pk = "pk_test_51HZWy0GvdcoiAyvVMva45A1r74HoaKNxFilbka1JYWZuM0Aa124a9kHyBdi84L7EwUlxnXZ9d8e57LXhlyZOz9zf00XZva9tAf"
 stripe.api_key = "sk_test_51HZWy0GvdcoiAyvVu8NzEmoMEA2s8RyR2fpNPeP4DGxOzziuTDvsvmUuwG3YgUhEgPgeqvLnLNLf3QAUXLCq6rpT00pr221LWg"
+
+# PayPal Keys
+paypal_client_id = "AWsOkuVbFzlYZeH7oEDr7LiiRR_9NMkEYPraKjf5m8m-SpnmgO-TFhIA53WNnwwvMyWPDO91kWNAbQcT"
+paypal_sk = "EB7kT36J2GGfvIk6_5OWsBO-rePeJSkPYmgZG8ZbT38NMfZFhNpWcE5_nTmtpzDa9T7tUIAo-XzqqC3s"
+environment = SandboxEnvironment(client_id=paypal_client_id, client_secret=paypal_sk)
+client = PayPalHttpClient(environment)
 
 # Routes ========================================================================================
 
@@ -159,7 +172,7 @@ def bag():
                 session.pop('bag', None)
                 return redirect(url_for('bag', u_session=u_session, error=error))
 
-        return render_template('bag.html', u_session=u_session, key=key, error=error, total=total, bag=bag, product_list=product_list)
+        return render_template('bag.html', paypal_client_id=paypal_client_id, u_session=u_session, key=key, error=error, total=total, bag=bag, product_list=product_list)
     else:
         error = "Bag is currently empty."
         return render_template('bag.html', u_session=u_session, error=error, total=total)

@@ -122,7 +122,7 @@ h1, h2, h3, h4, h5, a, p, ul, ol, li, label {
 }
 
 .stripe-btn {
-    padding: 6px 48px;
+    padding: 6px 52px;
     color: #ffffff;
     border: none;
     border-radius: 4px;
@@ -144,6 +144,30 @@ h1, h2, h3, h4, h5, a, p, ul, ol, li, label {
     transition: 0.3s;
     background-color: #5861c5;
 }
+
+/* .paypal-btn {
+    padding: 6px 48px;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    margin-top: 2em;
+    font-family: 'Source Sans Pro', sans-serif;
+    background-color: #019cde;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    -webkit-transform: perspective(1px) translateZ(0);
+    transform: perspective(1px) translateZ(0);
+    -webkit-transition-duration: 0.2s;
+    transition-duration: 0.2s;
+    -webkit-transition-property: transform;
+    transition-property: transform;
+}
+
+.paypal-btn:hover {
+    transition: 0.3s;
+    background-color: #0089c4;
+} */
 
 /* Image Styling */
 
