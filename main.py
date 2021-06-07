@@ -197,19 +197,27 @@ def create_stripe_session():
         'quantity': 1,
         }],
         mode='payment',
-        success_url='http://127.0.0.1:8080/success',
+        success_url='http://127.0.0.1:8080/success_stripe',
         cancel_url='http://127.0.0.1:8080/bag',
     )
     return jsonify({"sessionId": stripe_session["id"]})
 
 
-# Success
-@app.route('/success')
-def success():
+# Success page for Stripe
+@app.route('/success_stripe')
+def success_stripe():
     u_session = check_user_session()
     session.pop('bag', None)
     session.pop('total', None)
-    return render_template('success.html', u_session=u_session)
+    return render_template('success_stripe.html', u_session=u_session)
+
+# Success page for PayPal
+@app.route('/success_paypal')
+def success_paypal():
+    u_session = check_user_session()
+    session.pop('bag', None)
+    session.pop('total', None)
+    return render_template('success_paypal.html', u_session=u_session)
 
 
 # Working sign up =================================================================================

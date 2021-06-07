@@ -183,7 +183,7 @@ h1, h2, h3, h4, h5, a, p, ul, ol, li, label {
 
 .bag-img {
     height: auto;
-    width: 80%;
+    width: 100%;
 }
 
 /* Table Styling */
@@ -200,7 +200,7 @@ h1, h2, h3, h4, h5, a, p, ul, ol, li, label {
 }
 
 .bag-table {
-    width: 20%;
+    width: 60%;
     margin-left: 10em;
     margin-top: 4em;
     table-layout: fixed;
