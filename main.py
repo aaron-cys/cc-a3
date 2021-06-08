@@ -11,6 +11,7 @@ import requests
 from boto3.compat import filter_python_deprecation_warnings
 from boto3.dynamodb.conditions import Attr, Key
 from botocore import credentials
+import stripe
 from botocore.client import ClientMeta
 from botocore.exceptions import ClientError
 from botocore.vendored.six import assertCountEqual
@@ -18,9 +19,14 @@ from flask import *
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
+from paypalcheckoutsdk.core import PayPalHttpClient, SandboxEnvironment
+from paypalcheckoutsdk.orders import OrdersCreateRequest
+from paypalhttp import HttpError
 
 app = Flask(__name__)
 app.secret_key = "secretKey000"
+
+# AWS Keys
 aws_access_key_id = "AKIAVQHEZJ6A4MBK2V5K"
 aws_secret_access_key = "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"
 
@@ -34,6 +40,15 @@ flow = Flow.from_client_secrets_file(
     redirect_uri="http://127.0.0.1:8080/callback"
                                      )
 
+# Stripe Keys
+pk = "pk_test_51HZWy0GvdcoiAyvVMva45A1r74HoaKNxFilbka1JYWZuM0Aa124a9kHyBdi84L7EwUlxnXZ9d8e57LXhlyZOz9zf00XZva9tAf"
+stripe.api_key = "sk_test_51HZWy0GvdcoiAyvVu8NzEmoMEA2s8RyR2fpNPeP4DGxOzziuTDvsvmUuwG3YgUhEgPgeqvLnLNLf3QAUXLCq6rpT00pr221LWg"
+
+# PayPal Keys
+paypal_client_id = "AWsOkuVbFzlYZeH7oEDr7LiiRR_9NMkEYPraKjf5m8m-SpnmgO-TFhIA53WNnwwvMyWPDO91kWNAbQcT"
+paypal_sk = "EB7kT36J2GGfvIk6_5OWsBO-rePeJSkPYmgZG8ZbT38NMfZFhNpWcE5_nTmtpzDa9T7tUIAo-XzqqC3s"
+environment = SandboxEnvironment(client_id=paypal_client_id, client_secret=paypal_sk)
+client = PayPalHttpClient(environment)
 
 # Routes ========================================================================================
 
@@ -52,13 +67,15 @@ def index():
     u_session = check_user_session()
     product_list = get_products_by_category()
     new = get_new()
-    
-    popular = get_popular().decode('utf-8')
-    popular_items = popular
+    popular = get_popular()
+    popular_items = []
 
-    print (popular)
+    for p in popular:
+        split_product = p.split(':', 1)[0]
+        product = get_products_by_name(split_product)
+        popular_items.append(product)
 
-    return render_template('index.html', u_session=u_session, product_list=product_list, new=new, popular_items=popular_items)
+    return render_template('index.html', popular_items=popular_items, u_session=u_session, product_list=product_list, new=new, popular=popular)
 
 # Logout
 @app.route('/logout')
@@ -246,10 +263,12 @@ def product(product_name):
     else:
         return render_template('product.html', u_session=u_session, message=message, product_name=product_name, product_list=product_list)
 
+
 # Bag/cart page
 @app.route('/bag', methods=['GET', 'POST'])
 def bag():
     u_session = check_user_session()
+    key = pk
     error = None
     total = 0
 
@@ -263,20 +282,90 @@ def bag():
 
         for p in product_list:
             total += int(p[0]['price'])
+            session['total'] = total * 100
 
         if request.method == 'POST':
             if 'remove' in request.form:
                 session.pop('bag', None)
                 return redirect(url_for('bag', u_session=u_session, error=error))
 
-        return render_template('bag.html', u_session=u_session, error=error, total=total, bag=bag, product_list=product_list)
+        return render_template('bag.html', paypal_client_id=paypal_client_id, u_session=u_session, key=key, error=error, total=total, bag=bag, product_list=product_list)
     else:
         error = "Bag is currently empty."
         return render_template('bag.html', u_session=u_session, error=error, total=total)
 
+# Create Stripe session
+@app.route('/create-stripe-session', methods=['POST'])
+def create_stripe_session():
 
-# Signing up =================================================================================
-def signedUp(username, password, gname, fname, email, pnumber, address, valid, error):
+    total = session.get('total', None)
+
+    stripe_session = stripe.checkout.Session.create(
+        payment_method_types=['card'],
+        line_items=[{
+        'price_data': {
+            'currency': 'aud',
+            'product_data': {
+            'name': 'Arika',
+            },
+            'unit_amount': total,
+        },
+        'quantity': 1,
+        }],
+        mode='payment',
+        success_url='http://127.0.0.1:8080/success_stripe',
+        cancel_url='http://127.0.0.1:8080/bag',
+    )
+    return jsonify({"sessionId": stripe_session["id"]})
+
+
+# Success page for Stripe
+@app.route('/success_stripe')
+def success_stripe():
+    u_session = check_user_session()
+    if 'bag' in session:
+        bag = session['bag']
+        product_list = []
+        for product in bag:
+            p_list = product_list
+            p_list.append(get_products_by_name(product))
+            product_list = p_list
+        
+        for p in product_list:
+            name = p[0]['name']
+            popularity = p[0]['popularity'] 
+            popularity += 1
+            update_popularity(name, popularity)
+
+    session.pop('bag', None)
+    session.pop('total', None)
+    return render_template('success_stripe.html', u_session=u_session)
+
+# Success page for PayPal
+@app.route('/success_paypal')
+def success_paypal():
+    u_session = check_user_session()
+    if 'bag' in session:
+        bag = session['bag']
+        product_list = []
+        for product in bag:
+            p_list = product_list
+            p_list.append(get_products_by_name(product))
+            product_list = p_list
+        
+        for p in product_list:
+            name = p[0]['name']
+            popularity = p[0]['popularity'] 
+            popularity += 1
+            update_popularity(name, popularity)
+
+    session.pop('bag', None)
+    session.pop('total', None)
+    return render_template('success_paypal.html', u_session=u_session)
+
+
+# Working sign up =================================================================================
+def signedUp(username, password, gname, fname, email, pnumber, address, valid):
     client = boto3.client('cognito-idp', region_name='ap-southeast-2')
 
     try:
@@ -383,6 +472,24 @@ def getUser():
 
 # Products DB =====================================================================================
 
+# Update 'popularity' column in 'product' table
+def update_popularity(name, popularity, dynamodb=None):
+    if not dynamodb:
+        dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-2',
+                                  aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+
+    table = dynamodb.Table('product')
+    response = table.update_item(
+        Key={
+            'name': name
+        },
+        UpdateExpression="SET popularity = :p",
+        ExpressionAttributeValues={
+            ':p': popularity
+        }
+    )
+    return response
+
 # Scan and get products from 'product' table by NAME
 def get_products_by_name(name, dynamodb=None):
     if not dynamodb:
@@ -452,6 +559,20 @@ def get_popular():
 
     items = result['Payload'].read()
     return items
+
+# Lambda Functions =================================================================================
+
+# Get popular products from DynamoDB using Lambda
+def get_popular():
+    lambda_client = boto3.client('lambda', region_name='ap-southeast-2', 
+    aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+
+    result = lambda_client.invoke(FunctionName='get-popular-items-dynamodb', InvocationType='RequestResponse', Payload='{}')
+    
+    items = result['Payload'].read().decode('UTF-8')
+    load_items = json.loads(items)
+    return load_items
+
 
 # Run App
 if __name__ == "__main__":
