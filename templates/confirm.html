@@ -29,33 +29,25 @@
             <div class="col">
                 <form method="POST">
                     <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" class="form-control" name="username" id="username"
-                            placeholder="Enter Username" required>
+                        <label for="user">Username:</label>
+                        <input type="text" class="form-control" name="user" id="user" placeholder="Enter Username"
+                            required>
                     </div>
                     <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" class="form-control" name="password" id="password"
-                            placeholder="Enter password" required>
+                        <label for="code">Verification Code:</label>
+                        <input type="text" class="form-control" name="code" id="code" placeholder="Enter Confirmation Code"
+                            required>
                     </div>
-                    <p class="form-text text-muted">Don't have an account yet? <a id="minor-link-light"
-                            href="/signup">Register
-                            here</a></p>
                     <div class="text-center">
-                        <button type="submit" class="btn btn-dark mt-4" id="sml-btn" name="login">Log In</button>
+                        <button type="submit" class="btn btn-dark mt-4" id="sml-btn">Submit</button>
                     </div>
                 </form>
-                <form method="POST">
-                    <button type="submit" class="btn btn-dark mt-4" id="sml-btn"
-                        style="margin-left: 50%; transform: translate(-50%);" name="google">Login with Google</button>
-                </form>
-            </div>
-            <div id="status">
             </div>
             <div class="col"></div>
         </div>
         {% endblock %}
         {% endblock %}
-        
+
 </body>
+
 </html>

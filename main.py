@@ -1,16 +1,24 @@
 import logging
+import os
 import urllib.request
 from decimal import Decimal
 from pathlib import Path
 
 import boto3
 import botocore
-import stripe
+import google.auth.transport.requests
+import requests
+from boto3.compat import filter_python_deprecation_warnings
 from boto3.dynamodb.conditions import Attr, Key
+from botocore import credentials
+import stripe
 from botocore.client import ClientMeta
 from botocore.exceptions import ClientError
 from botocore.vendored.six import assertCountEqual
 from flask import *
+from google.oauth2 import id_token
+from google_auth_oauthlib.flow import Flow
+from pip._vendor import cachecontrol
 from paypalcheckoutsdk.core import PayPalHttpClient, SandboxEnvironment
 from paypalcheckoutsdk.orders import OrdersCreateRequest
 from paypalhttp import HttpError
@@ -21,6 +29,16 @@ app.secret_key = "secretKey000"
 # AWS Keys
 aws_access_key_id = "AKIAVQHEZJ6A4MBK2V5K"
 aws_secret_access_key = "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"
+
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
+google_client_id = "1032499516768-35kg0d0fbfu1paqgei4tgdb1i76c7kh6.apps.googleusercontent.com"
+google_client_secret = os.path.join(Path(__file__).parent, "static/arika_google.json")
+flow = Flow.from_client_secrets_file(
+    client_secrets_file=google_client_secret,
+    scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
+    redirect_uri="http://127.0.0.1:8080/callback"
+                                     )
 
 # Stripe Keys
 pk = "pk_test_51HZWy0GvdcoiAyvVMva45A1r74HoaKNxFilbka1JYWZuM0Aa124a9kHyBdi84L7EwUlxnXZ9d8e57LXhlyZOz9zf00XZva9tAf"
@@ -37,6 +55,8 @@ client = PayPalHttpClient(environment)
 # Check if user is logged in or not
 def check_user_session():
     if 'user' in session:
+        return True
+    elif 'google_id' in session:
         return True
     else:
         return False
@@ -67,44 +87,133 @@ def logout():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
-    valid = False
+    valid = "false"
+        
+    if "user" in session:
+        return redirect(url_for("index"))
+    else:
+        # get the data from the form
+        if request.method == "POST":
+            if "login" in request.form:
+                username = request.form["username"]
+                password = request.form["password"]
+                result = loggedIn(username, password, valid, error)
+                loggedString = str(result)
+                loggedStrip = loggedString.strip("()")
+                lsplit = loggedStrip.split(', ')[0]
+                cognito_at = loggedStrip.split(', ')[1]
+                session['cognito_at'] = cognito_at.strip("'")
+                logged = lsplit.strip("'")
+                if(logged == "true"):
+                    session['user'] = username
+                    return redirect(url_for("index"))
+                else:
+                    errorString = str(result)
+                    errorStrip = errorString.strip("()")
+                    esplit = errorStrip.split(', ')[1]
+                    error = esplit.strip("'")
+                    return render_template('login.html', error=error)
+            
+            # Google login redirect
+            if "google" in request.form:
+                authorization_url, state = flow.authorization_url()
+                session["state"] = state
+                return redirect(authorization_url)
+                
+        
+        return render_template('login.html')
 
-    # Get the data from the form
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        if (loggedIn(username, password, valid)):
-            session['user'] = username
-            return redirect(url_for("index"))
-        else:
-            error = "Incorrect Username or Password"
-            return render_template('login.html', error=error)
 
-    return render_template('login.html')
+# Google call back
+@app.route("/callback")
+def gcallback():
+    flow.fetch_token(authorization_response=request.url)
+
+    if not session["state"] == request.args["state"]:
+        abort(500)
+
+    credentials = flow.credentials
+    request_session = requests.session()
+    cached_session = cachecontrol.CacheControl(request_session)
+    token_request = google.auth.transport.requests.Request(session=cached_session)
+
+    id_info = id_token.verify_oauth2_token(
+        id_token=credentials._id_token,
+        request=token_request,
+        audience=google_client_id
+    )
+
+    session["google_id"] = id_info.get("sub")
+    session["name"] = id_info.get("name")
+    return redirect(url_for("index"))
 
 # Sign up
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     error = None
-    valid = False
+    valid = "false"
+        
+    if "user" in session:
+        return redirect(url_for("index"))
+    else:
+        # get the data from the form
+        if request.method == "POST":
+            username = request.form["username"]
+            gname = request.form["gname"]
+            fname = request.form["fname"]
+            email = request.form["email"]
+            pnumber = request.form["pnumber"]
+            address = request.form["address"]
+            password = request.form["password"]
+            logged = signedUp(username, password, gname, fname, email, pnumber, address, valid, error)
+            if(logged[0:] == "true"):
+                return redirect(url_for("confirm"))
+            else:
+                errorString = str(logged)
+                stringStrip = errorString.strip("()")
+                esplit = stringStrip.split(', ')[1]
+                error = esplit.strip("'")
+                return render_template('signup.html', error=error)
 
-    # Get the data from the form
-    if request.method == "POST":
-        username = request.form["username"]
-        gname = request.form["gname"]
-        fname = request.form["fname"]
-        email = request.form["email"]
-        pnumber = request.form["pnumber"]
-        address = request.form["address"]
-        password = request.form["password"]
 
-        if (signedUp(username, password, gname, fname, email, pnumber, address, valid)):
-            return redirect(url_for("login"))
-        else:
-            error = "Username already exists"
-            return render_template('signup.html', error=error)
+        return render_template('signup.html', error=error)
 
-    return render_template('signup.html', error=error)
+
+# Confirm
+@app.route('/confirmation', methods=['GET', 'POST'])
+def confirm():
+    error = None
+    valid = "false"
+
+    if "user" in session:
+        return redirect(url_for("index"))
+    else:
+        # get the data from the form
+        if request.method == "POST":
+            username = request.form["user"]
+            code = request.form["code"]
+            logged = userConfirm(username, code, valid, error)
+            if(logged[0:] == "true"):
+                return redirect(url_for("login"))
+            else:
+                errorString = str(logged)
+                stringStrip = errorString.strip("()")
+                esplit = stringStrip.split(', ')[1]
+                error = esplit.strip("'")
+                return render_template('confirm.html', error=error)
+
+        return render_template('confirm.html', error=error)
+
+
+# Profile
+@app.route('/profile')
+def profile():
+    u_session = check_user_session()
+    
+    userInfo = getUser()
+    
+    return render_template('profile.html', u_session=u_session, userInfo=userInfo)
+
 
 # Collection category page
 @app.route('/collection')
@@ -184,7 +293,6 @@ def bag():
     else:
         error = "Bag is currently empty."
         return render_template('bag.html', u_session=u_session, error=error, total=total)
-
 
 # Create Stripe session
 @app.route('/create-stripe-session', methods=['POST'])
@@ -288,41 +396,37 @@ def signedUp(username, password, gname, fname, email, pnumber, address, valid):
                 }
             ]
         )
-        valid = True
-        return(valid == True)
-    except:
-        valid = False
+        valid = "true"
+        return valid
+    except Exception as e:
+        ex= str(e)
+        error = ex.split(": ",1)[1]
+        return valid, error
+    
 
-
-# Sending confirmation ============================================================================
-def sendConfirmationCode():
-    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
-
-    username = "asoa2"
-
-    client.resend_confirmation_code(
-        ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
-        Username=username,
-    )
-
-
-# Confirm =========================================================================================
-def confirm(username, code):
-    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
-
-    client.confirm_sign_up(
-        ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
-        Username=username,
-        ConfirmationCode=code
-    )
-
-
-# Check logged in =================================================================================
-def loggedIn(username, password, valid):
+# confirmation =========================================================================================
+def userConfirm(username, code, valid, error):
     client = boto3.client('cognito-idp', region_name='ap-southeast-2')
 
     try:
-        client.initiate_auth(
+        client.confirm_sign_up(
+            ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
+            Username=username,
+            ConfirmationCode=code
+        )
+        valid = "true"
+        return valid
+    except Exception as e:
+        ex = str(e)
+        error = ex.split(": ",1)[1]
+        return valid, error
+
+# Check logged in =================================================================================
+def loggedIn(username, password, valid, error):
+    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
+
+    try:
+        response = client.initiate_auth(
             ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
             AuthFlow='USER_PASSWORD_AUTH',
             AuthParameters={
@@ -330,28 +434,40 @@ def loggedIn(username, password, valid):
                 'PASSWORD': password
             }
         )
-        valid = True
-        return(valid == True)
-    except:
-        valid = False
+        
+        cognito_access_token = response['AuthenticationResult']['AccessToken']
+        valid = "true"
+        return valid, cognito_access_token
+    except Exception as e:
+        ex = str(e)
+        error = ex.split(": ",1)[1]
+        return valid, error
+    
 
-
-# Get user ========================================================================================
-def getUser(access_token):
-
+# Get user
+def getUser():
     client = boto3.client('cognito-idp', region_name='ap-southeast-2')
+    cognito_at = session['cognito_at']
 
     response = client.get_user(
-        AccessToken=access_token
+        AccessToken = cognito_at
     )
-
-    attr_sub = None
+    
+    attr_list = []
+    attr_list.append(response['Username'])
     for attr in response['UserAttributes']:
-        if attr['Name'] == 'sub':
-            attr_sub = attr['Value']
-            break
-
-    print('UserSub', attr_sub)
+        if attr["Name"] == "given_name":
+            attr_list.append(attr['Value'])
+        if attr["Name"] == "family_name":
+            attr_list.append(attr['Value'])
+        if attr["Name"] == "email":
+            attr_list.append(attr['Value'])
+        if attr["Name"] == "phone_number":
+            attr_list.append(attr['Value'])
+        if attr["Name"] == "address":
+            attr_list.append(attr['Value'])        
+    
+    return attr_list
 
 
 # Products DB =====================================================================================
@@ -435,6 +551,14 @@ def get_new(dynamodb=None):
     )
     return response['Items']
 
+def get_popular():
+    lambda_client = boto3.client('lambda', region_name='ap-southeast-2', 
+    aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+
+    result = lambda_client.invoke(FunctionName='get-popular-items-dynamodb', InvocationType='RequestResponse', Payload='{}')
+
+    items = result['Payload'].read()
+    return items
 
 # Lambda Functions =================================================================================
 
