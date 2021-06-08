@@ -1,15 +1,16 @@
-from botocore.client import ClientMeta
-from botocore.vendored.six import assertCountEqual
-from flask import Flask, render_template, session, redirect, url_for, request, Blueprint, jsonify
-from botocore.exceptions import ClientError
-from boto3.dynamodb.conditions import Key, Attr
-from decimal import Decimal
-import boto3
 import logging
 import urllib.request
+from decimal import Decimal
 from pathlib import Path
+
+import boto3
 import botocore
 import stripe
+from boto3.dynamodb.conditions import Attr, Key
+from botocore.client import ClientMeta
+from botocore.exceptions import ClientError
+from botocore.vendored.six import assertCountEqual
+from flask import *
 from paypalcheckoutsdk.core import PayPalHttpClient, SandboxEnvironment
 from paypalcheckoutsdk.orders import OrdersCreateRequest
 from paypalhttp import HttpError
@@ -46,8 +47,15 @@ def index():
     u_session = check_user_session()
     product_list = get_products_by_category()
     new = get_new()
+    popular = get_popular()
+    popular_items = []
 
-    return render_template('index.html', u_session=u_session, product_list=product_list, new=new)
+    for p in popular:
+        split_product = p.split(':', 1)[0]
+        product = get_products_by_name(split_product)
+        popular_items.append(product)
+
+    return render_template('index.html', popular_items=popular_items, u_session=u_session, product_list=product_list, new=new, popular=popular)
 
 # Logout
 @app.route('/logout')
@@ -207,6 +215,20 @@ def create_stripe_session():
 @app.route('/success_stripe')
 def success_stripe():
     u_session = check_user_session()
+    if 'bag' in session:
+        bag = session['bag']
+        product_list = []
+        for product in bag:
+            p_list = product_list
+            p_list.append(get_products_by_name(product))
+            product_list = p_list
+        
+        for p in product_list:
+            name = p[0]['name']
+            popularity = p[0]['popularity'] 
+            popularity += 1
+            update_popularity(name, popularity)
+
     session.pop('bag', None)
     session.pop('total', None)
     return render_template('success_stripe.html', u_session=u_session)
@@ -215,6 +237,20 @@ def success_stripe():
 @app.route('/success_paypal')
 def success_paypal():
     u_session = check_user_session()
+    if 'bag' in session:
+        bag = session['bag']
+        product_list = []
+        for product in bag:
+            p_list = product_list
+            p_list.append(get_products_by_name(product))
+            product_list = p_list
+        
+        for p in product_list:
+            name = p[0]['name']
+            popularity = p[0]['popularity'] 
+            popularity += 1
+            update_popularity(name, popularity)
+
     session.pop('bag', None)
     session.pop('total', None)
     return render_template('success_paypal.html', u_session=u_session)
@@ -320,6 +356,24 @@ def getUser(access_token):
 
 # Products DB =====================================================================================
 
+# Update 'popularity' column in 'product' table
+def update_popularity(name, popularity, dynamodb=None):
+    if not dynamodb:
+        dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-2',
+                                  aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+
+    table = dynamodb.Table('product')
+    response = table.update_item(
+        Key={
+            'name': name
+        },
+        UpdateExpression="SET popularity = :p",
+        ExpressionAttributeValues={
+            ':p': popularity
+        }
+    )
+    return response
+
 # Scan and get products from 'product' table by NAME
 def get_products_by_name(name, dynamodb=None):
     if not dynamodb:
@@ -380,6 +434,20 @@ def get_new(dynamodb=None):
         FilterExpression=Attr('category').eq("New")
     )
     return response['Items']
+
+
+# Lambda Functions =================================================================================
+
+# Get popular products from DynamoDB using Lambda
+def get_popular():
+    lambda_client = boto3.client('lambda', region_name='ap-southeast-2', 
+    aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+
+    result = lambda_client.invoke(FunctionName='get-popular-items-dynamodb', InvocationType='RequestResponse', Payload='{}')
+    
+    items = result['Payload'].read().decode('UTF-8')
+    load_items = json.loads(items)
+    return load_items
 
 
 # Run App
