@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Home | Arika</title>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+    {% if u_session %}
+        {% extends 'nav_logged_in.html' %}
+    {% else %}
+        {% extends 'nav_layout.html' %}
+    {% endif %}
+
+    {% block content %}
+
+    <div style="margin-bottom: 23em; margin-left: 5.2em;">
+        <img src="../static/images/check.png" style="margin-top: 4em; width: 35px; height: auto;">
+        <h1 class="payment-success" style="margin-top: 0.5em;">Stripe payment was successful!</h1>
+        <a href="/" class="btn btn-outline-dark" style="margin-top: 3em;" id="large-btn">Return Home</a>
+    </div>
+
+    <footer>
+        <p>/ <a id="footer-header-link" href="/">Arika</a> /</p>
+        <a id="stylised-link" href="/collection">Collection&nbsp;&nbsp;/</a>
+        <a id="stylised-link" href="/women">Women&nbsp;&nbsp;/</a>
+        <a id="stylised-link" href="/men">Men&nbsp;&nbsp;/</a>
+        <a id="stylised-link" href="/new">New</a>
+    </footer>
+
+    {% endblock %}
+
+</body>
+
+</html>
