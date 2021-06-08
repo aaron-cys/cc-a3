@@ -52,8 +52,13 @@ def index():
     u_session = check_user_session()
     product_list = get_products_by_category()
     new = get_new()
+    
+    popular = get_popular().decode('utf-8')
+    popular_items = popular
 
-    return render_template('index.html', u_session=u_session, product_list=product_list, new=new)
+    print (popular)
+
+    return render_template('index.html', u_session=u_session, product_list=product_list, new=new, popular_items=popular_items)
 
 # Logout
 @app.route('/logout')
@@ -75,14 +80,20 @@ def login():
             if "login" in request.form:
                 username = request.form["username"]
                 password = request.form["password"]
-                logged = loggedIn(username, password, valid, error)
-                if(logged[0:] == "true"):
+                result = loggedIn(username, password, valid, error)
+                loggedString = str(result)
+                loggedStrip = loggedString.strip("()")
+                lsplit = loggedStrip.split(', ')[0]
+                cognito_at = loggedStrip.split(', ')[1]
+                session['cognito_at'] = cognito_at.strip("'")
+                logged = lsplit.strip("'")
+                if(logged == "true"):
                     session['user'] = username
                     return redirect(url_for("index"))
                 else:
-                    errorString = str(logged)
-                    stringStrip = errorString.strip("()")
-                    esplit = stringStrip.split(', ')[1]
+                    errorString = str(result)
+                    errorStrip = errorString.strip("()")
+                    esplit = errorStrip.split(', ')[1]
                     error = esplit.strip("'")
                     return render_template('login.html', error=error)
             
@@ -175,6 +186,16 @@ def confirm():
                 return render_template('confirm.html', error=error)
 
         return render_template('confirm.html', error=error)
+
+
+# Profile
+@app.route('/profile')
+def profile():
+    u_session = check_user_session()
+    
+    userInfo = getUser()
+    
+    return render_template('profile.html', u_session=u_session, userInfo=userInfo)
 
 
 # Collection category page
@@ -316,7 +337,7 @@ def loggedIn(username, password, valid, error):
     client = boto3.client('cognito-idp', region_name='ap-southeast-2')
 
     try:
-        client.initiate_auth(
+        response = client.initiate_auth(
             ClientId='7p0cuvbjof3nuvp3ho2hh3srun',
             AuthFlow='USER_PASSWORD_AUTH',
             AuthParameters={
@@ -324,12 +345,41 @@ def loggedIn(username, password, valid, error):
                 'PASSWORD': password
             }
         )
+        
+        cognito_access_token = response['AuthenticationResult']['AccessToken']
         valid = "true"
-        return valid
+        return valid, cognito_access_token
     except Exception as e:
         ex = str(e)
         error = ex.split(": ",1)[1]
         return valid, error
+    
+
+# Get user
+def getUser():
+    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
+    cognito_at = session['cognito_at']
+
+    response = client.get_user(
+        AccessToken = cognito_at
+    )
+    
+    attr_list = []
+    attr_list.append(response['Username'])
+    for attr in response['UserAttributes']:
+        if attr["Name"] == "given_name":
+            attr_list.append(attr['Value'])
+        if attr["Name"] == "family_name":
+            attr_list.append(attr['Value'])
+        if attr["Name"] == "email":
+            attr_list.append(attr['Value'])
+        if attr["Name"] == "phone_number":
+            attr_list.append(attr['Value'])
+        if attr["Name"] == "address":
+            attr_list.append(attr['Value'])        
+    
+    return attr_list
+
 
 # Products DB =====================================================================================
 
@@ -394,6 +444,14 @@ def get_new(dynamodb=None):
     )
     return response['Items']
 
+def get_popular():
+    lambda_client = boto3.client('lambda', region_name='ap-southeast-2', 
+    aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+
+    result = lambda_client.invoke(FunctionName='get-popular-items-dynamodb', InvocationType='RequestResponse', Payload='{}')
+
+    items = result['Payload'].read()
+    return items
 
 # Run App
 if __name__ == "__main__":
