@@ -144,7 +144,8 @@ def gcallback():
     )
 
     session["google_id"] = id_info.get("sub")
-    session["name"] = id_info.get("name")
+    session["google_name"] = id_info.get("name")
+    session["google_email"] = id_info.get("email")
     return redirect(url_for("index"))
 
 # Sign up
@@ -446,29 +447,43 @@ def loggedIn(username, password, valid, error):
 
 # Get user
 def getUser():
-    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
-    cognito_at = session['cognito_at']
+    if 'user' in session:
+        client = boto3.client('cognito-idp', region_name='ap-southeast-2')
+        cognito_at = session['cognito_at']
 
-    response = client.get_user(
-        AccessToken = cognito_at
-    )
+        response = client.get_user(
+            AccessToken = cognito_at
+        )
+        
+        acc_type = "cognito"
+        attr_list = []
+        attr_list.append(acc_type)
+        attr_list.append(response['Username'])
+        for attr in response['UserAttributes']:
+            if attr["Name"] == "given_name":
+                attr_list.append(attr['Value'])
+            if attr["Name"] == "family_name":
+                attr_list.append(attr['Value'])
+            if attr["Name"] == "email":
+                attr_list.append(attr['Value'])
+            if attr["Name"] == "phone_number":
+                attr_list.append(attr['Value'])
+            if attr["Name"] == "address":
+                attr_list.append(attr['Value'])        
+        
+        return attr_list
     
-    attr_list = []
-    attr_list.append(response['Username'])
-    for attr in response['UserAttributes']:
-        if attr["Name"] == "given_name":
-            attr_list.append(attr['Value'])
-        if attr["Name"] == "family_name":
-            attr_list.append(attr['Value'])
-        if attr["Name"] == "email":
-            attr_list.append(attr['Value'])
-        if attr["Name"] == "phone_number":
-            attr_list.append(attr['Value'])
-        if attr["Name"] == "address":
-            attr_list.append(attr['Value'])        
-    
-    return attr_list
-
+    elif 'google_id' in session:
+        acc_type = "google"
+        userData = []
+        userData.append(acc_type)
+        name = session['google_name']
+        userData.append(name)
+        email = session['google_email']
+        userData.append(email)
+        
+        return userData
+        
 
 # Products DB =====================================================================================
 
@@ -575,5 +590,4 @@ def get_popular():
 
 # Run App
 if __name__ == "__main__":
-    # application.run(host='0.0.0.0', debug=True)
     application.run(debug=True)
