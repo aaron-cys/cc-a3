@@ -23,8 +23,8 @@ from paypalcheckoutsdk.core import PayPalHttpClient, SandboxEnvironment
 from paypalcheckoutsdk.orders import OrdersCreateRequest
 from paypalhttp import HttpError
 
-application = Flask(__name__)
-application.secret_key = "secretKey000"
+app = Flask(__name__)
+app.secret_key = "secretKey000"
 
 # AWS Keys
 aws_access_key_id = "AKIAVQHEZJ6A4MBK2V5K"
@@ -62,7 +62,7 @@ def check_user_session():
         return False
 
 # Index
-@application.route('/')
+@app.route('/')
 def index():
     u_session = check_user_session()
     product_list = get_products_by_category()
@@ -78,13 +78,13 @@ def index():
     return render_template('index.html', popular_items=popular_items, u_session=u_session, product_list=product_list, new=new, popular=popular)
 
 # Logout
-@application.route('/logout')
+@app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for("index"))
 
 # Login
-@application.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
     valid = "false"
@@ -125,7 +125,7 @@ def login():
 
 
 # Google call back
-@application.route("/callback")
+@app.route("/callback")
 def gcallback():
     flow.fetch_token(authorization_response=request.url)
 
@@ -148,7 +148,7 @@ def gcallback():
     return redirect(url_for("index"))
 
 # Sign up
-@application.route('/signup', methods=['GET', 'POST'])
+@app.route('/signup', methods=['GET', 'POST'])
 def signup():
     error = None
     valid = "false"
@@ -180,7 +180,7 @@ def signup():
 
 
 # Confirm
-@application.route('/confirmation', methods=['GET', 'POST'])
+@app.route('/confirmation', methods=['GET', 'POST'])
 def confirm():
     error = None
     valid = "false"
@@ -206,7 +206,7 @@ def confirm():
 
 
 # Profile
-@application.route('/profile')
+@app.route('/profile')
 def profile():
     u_session = check_user_session()
     
@@ -216,7 +216,7 @@ def profile():
 
 
 # Collection category page
-@application.route('/collection')
+@app.route('/collection')
 def collectionList():
     u_session = check_user_session()
     error = None
@@ -225,28 +225,28 @@ def collectionList():
     return render_template('collection.html', u_session=u_session, error=error, product_list=product_list)
 
 # Women category page
-@application.route('/women')
+@app.route('/women')
 def women():
     u_session = check_user_session()
     product_list = get_women()
     return render_template('women.html', u_session=u_session, product_list=product_list)
 
 # Men category page
-@application.route('/men')
+@app.route('/men')
 def men():
     u_session = check_user_session()
     product_list = get_men()
     return render_template('men.html', u_session=u_session, product_list=product_list)
 
 # New category page
-@application.route('/new')
+@app.route('/new')
 def new():
     u_session = check_user_session()
     product_list = get_new()
     return render_template('new.html', u_session=u_session, product_list=product_list)
 
 # Individual product page
-@application.route('/product/<product_name>', methods=['GET', 'POST'])
+@app.route('/product/<product_name>', methods=['GET', 'POST'])
 def product(product_name):
     u_session = check_user_session()
     message = None
@@ -265,7 +265,7 @@ def product(product_name):
 
 
 # Bag/cart page
-@application.route('/bag', methods=['GET', 'POST'])
+@app.route('/bag', methods=['GET', 'POST'])
 def bag():
     u_session = check_user_session()
     key = pk
@@ -295,7 +295,7 @@ def bag():
         return render_template('bag.html', u_session=u_session, error=error, total=total)
 
 # Create Stripe session
-@application.route('/create-stripe-session', methods=['POST'])
+@app.route('/create-stripe-session', methods=['POST'])
 def create_stripe_session():
 
     total = session.get('total', None)
@@ -320,7 +320,7 @@ def create_stripe_session():
 
 
 # Success page for Stripe
-@application.route('/success_stripe')
+@app.route('/success_stripe')
 def success_stripe():
     u_session = check_user_session()
     if 'bag' in session:
@@ -342,7 +342,7 @@ def success_stripe():
     return render_template('success_stripe.html', u_session=u_session)
 
 # Success page for PayPal
-@application.route('/success_paypal')
+@app.route('/success_paypal')
 def success_paypal():
     u_session = check_user_session()
     if 'bag' in session:
@@ -575,5 +575,5 @@ def get_popular():
 
 # Run App
 if __name__ == "__main__":
-    # application.run(host='0.0.0.0', debug=True)
-    application.run(debug=True)
+    # app.run(host='0.0.0.0', debug=True)
+    app.run(debug=True)
