@@ -37,7 +37,7 @@ google_client_secret = os.path.join(Path(__file__).parent, "static/arika_google.
 flow = Flow.from_client_secrets_file(
     client_secrets_file=google_client_secret,
     scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
-    redirect_uri="http://127.0.0.1:8080/callback"
+    redirect_uri="http://arika-env.eba-f596cma3.ap-southeast-2.elasticbeanstalk.com/callback"
                                      )
 
 # Stripe Keys
