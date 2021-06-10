@@ -267,16 +267,21 @@ def product(product_name):
     product_list = get_products_by_name(product_name)
 
     if request.method == 'POST':
-        # Store product in bag session
-        if 'bag' not in session:
-            session['bag'] = []
-        bag = session['bag']
-        bag.append(request.form['product_name'])
-        bag.append(request.form.get('size'))
-        session['bag'] = bag
+        if u_session:
+            # Store product in bag session
+            if 'bag' not in session:
+                session['bag'] = []
+            bag = session['bag']
+            bag.append(request.form['product_name'])
+            bag.append(request.form.get('size'))
+            session['bag'] = bag
 
-        message = "Successfully added to bag!"
-        return render_template('product.html', u_session=u_session, message=message, product_name=product_name, product_list=product_list, bag=bag)
+            message = "Successfully added to bag!"
+            return render_template('product.html', u_session=u_session, message=message, product_name=product_name, product_list=product_list, bag=bag)
+        else:
+            message = "Please log in to add to bag"
+            return render_template('product.html', u_session=u_session, message=message, product_name=product_name, product_list=product_list)
+
     else:
         return render_template('product.html', u_session=u_session, message=message, product_name=product_name, product_list=product_list)
 
