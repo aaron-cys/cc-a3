@@ -209,7 +209,6 @@ def confirm():
 @app.route('/profile')
 def profile():
     u_session = check_user_session()
-    
     userInfo = getUser()
     
     return render_template('profile.html', u_session=u_session, userInfo=userInfo)
@@ -267,6 +266,7 @@ def product(product_name):
     product_list = get_products_by_name(product_name)
 
     if request.method == 'POST':
+        # If user is logged in, then allow them to add product to bag
         if u_session:
             # Store product in bag session
             if 'bag' not in session:
@@ -299,6 +299,7 @@ def bag():
         product_list = []
         for product in bag:
             p_list = product_list
+            # Check if element in session is size (determined by uppercase) or product list
             if product.isupper():
                 size = []
                 size.append({'size':product, 'price':0, 'name':'Dummy', 'popularity':0})
@@ -312,6 +313,7 @@ def bag():
             session['total'] = total * 100
 
         if request.method == 'POST':
+            # Empty the bag from session if selected
             if 'remove' in request.form:
                 session.pop('bag', None)
                 return redirect(url_for('bag', u_session=u_session, error=error))
@@ -327,6 +329,7 @@ def create_stripe_session():
 
     total = session.get('total', None)
 
+    # Create Stripe session with details
     stripe_session = stripe.checkout.Session.create(
         payment_method_types=['card'],
         line_items=[{
@@ -364,7 +367,7 @@ def success_stripe():
             product_list = p_list
         
         for p in product_list:
-            # print(p)
+            # Increment popularity by 1 for purchased products
             name = p[0]['name']
             popularity = p[0]['popularity'] 
             popularity += 1
@@ -392,7 +395,7 @@ def success_paypal():
             product_list = p_list
         
         for p in product_list:
-            # print(p)
+            # Increment popularity by 1 for purchased products
             name = p[0]['name']
             popularity = p[0]['popularity'] 
             popularity += 1
