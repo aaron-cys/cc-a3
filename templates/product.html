@@ -13,9 +13,9 @@
 
 <body>
     {% if u_session %}
-        {% extends 'nav_logged_in.html' %}
+    {% extends 'nav_logged_in.html' %}
     {% else %}
-        {% extends 'nav_layout.html' %}
+    {% extends 'nav_layout.html' %}
     {% endif %}
 
     {% block content %}
@@ -29,18 +29,25 @@
                     <td>
                         <div style="margin-top: -5em;">
                             {% if message %}
-                            <p>{{ message }}</p>
+                            <p style="color: rgb(0, 172, 149);">{{ message }}</p>
                             {% endif %}
                             <h1 class="stylised-header">/ {{ p['name'] }} /</h1>
-                            <p class="mt-1">${{ p['price'] }}.00</p>
-                            <div style="font-size: 17px; margin-top: 3em;">
-                                <p>Colour: {{ p['colour'] }}</p>
+                            <p class="mt-1" style="font-size: 20px;">${{ p['price'] }}.00 / {{ p['colour'] }}</p>
+                            <div style="font-size: 17px; margin-top: 3em; margin-bottom: 2em;">
+                                <select class="form-select form-select-sm mr-2" name="size">
+                                    <option value="XS" selected>XS</option>
+                                    <option value="S">S</option>
+                                    <option value="M">M</option>
+                                    <option value="L">L</option>
+                                    <option value="XL">XL</option>
+                                </select>
+
+                                <a href="/size_tool" class="btn btn-outline-dark" id="size-btn">Measure size</a>
                             </div>
 
                             <!-- Hidden Input -->
                             <input type="hidden" value="{{ p['name'] }}" name="product_name">
-                            <input type="submit" class="btn btn-outline-dark" id="add-btn" value="Add to bag"
-                                name="add" />
+                            <input type="submit" class="add-btn" value="Add to bag" name="add" />
                         </div>
                     </td>
                 </tr>

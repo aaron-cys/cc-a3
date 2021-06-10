@@ -209,11 +209,24 @@ def confirm():
 @app.route('/profile')
 def profile():
     u_session = check_user_session()
-    
     userInfo = getUser()
     
     return render_template('profile.html', u_session=u_session, userInfo=userInfo)
 
+# Size Measurement Tool
+@app.route('/size_tool', methods=['GET', 'POST'])
+def size_tool():
+    u_session = check_user_session()
+    size = None
+
+    if request.method == "POST":
+        bust = int(request.form["bust"])
+        waist = int(request.form["waist"])
+        hip = int(request.form["hip"])
+        size = calculate_size(bust, waist, hip)
+        return render_template('size_tool.html', u_session=u_session, size=size)
+    else:
+        return render_template('size_tool.html', u_session=u_session)
 
 # Collection category page
 @app.route('/collection')
@@ -253,13 +266,22 @@ def product(product_name):
     product_list = get_products_by_name(product_name)
 
     if request.method == 'POST':
-        if 'bag' not in session:
-            session['bag'] = []
-        bag = session['bag']
-        bag.append(request.form['product_name'])
-        session['bag'] = bag
-        message = "Successfully added to bag!"
-        return render_template('product.html', u_session=u_session, message=message, product_name=product_name, product_list=product_list, bag=bag)
+        # If user is logged in, then allow them to add product to bag
+        if u_session:
+            # Store product in bag session
+            if 'bag' not in session:
+                session['bag'] = []
+            bag = session['bag']
+            bag.append(request.form['product_name'])
+            bag.append(request.form.get('size'))
+            session['bag'] = bag
+
+            message = "Successfully added to bag!"
+            return render_template('product.html', u_session=u_session, message=message, product_name=product_name, product_list=product_list, bag=bag)
+        else:
+            message = "Please log in to add to bag"
+            return render_template('product.html', u_session=u_session, message=message, product_name=product_name, product_list=product_list)
+
     else:
         return render_template('product.html', u_session=u_session, message=message, product_name=product_name, product_list=product_list)
 
@@ -277,7 +299,13 @@ def bag():
         product_list = []
         for product in bag:
             p_list = product_list
-            p_list.append(get_products_by_name(product))
+            # Check if element in session is size (determined by uppercase) or product list
+            if product.isupper():
+                size = []
+                size.append({'size':product, 'price':0, 'name':'Dummy', 'popularity':0})
+                p_list.append(size)
+            else:
+                p_list.append(get_products_by_name(product))
             product_list = p_list
 
         for p in product_list:
@@ -285,6 +313,7 @@ def bag():
             session['total'] = total * 100
 
         if request.method == 'POST':
+            # Empty the bag from session if selected
             if 'remove' in request.form:
                 session.pop('bag', None)
                 return redirect(url_for('bag', u_session=u_session, error=error))
@@ -300,6 +329,7 @@ def create_stripe_session():
 
     total = session.get('total', None)
 
+    # Create Stripe session with details
     stripe_session = stripe.checkout.Session.create(
         payment_method_types=['card'],
         line_items=[{
@@ -328,10 +358,16 @@ def success_stripe():
         product_list = []
         for product in bag:
             p_list = product_list
-            p_list.append(get_products_by_name(product))
+            if product.isupper():
+                size = []
+                size.append({'size':product, 'price':0, 'name':'Dummy', 'popularity':0})
+                p_list.append(size)
+            else:
+                p_list.append(get_products_by_name(product))
             product_list = p_list
         
         for p in product_list:
+            # Increment popularity by 1 for purchased products
             name = p[0]['name']
             popularity = p[0]['popularity'] 
             popularity += 1
@@ -350,10 +386,16 @@ def success_paypal():
         product_list = []
         for product in bag:
             p_list = product_list
-            p_list.append(get_products_by_name(product))
+            if product.isupper():
+                size = []
+                size.append({'size':product, 'price':0, 'name':'Dummy', 'popularity':0})
+                p_list.append(size)
+            else:
+                p_list.append(get_products_by_name(product))
             product_list = p_list
         
         for p in product_list:
+            # Increment popularity by 1 for purchased products
             name = p[0]['name']
             popularity = p[0]['popularity'] 
             popularity += 1
@@ -551,14 +593,21 @@ def get_new(dynamodb=None):
     )
     return response['Items']
 
-def get_popular():
-    lambda_client = boto3.client('lambda', region_name='ap-southeast-2', 
-    aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+# Size Measurement Tool ============================================================================
 
-    result = lambda_client.invoke(FunctionName='get-popular-items-dynamodb', InvocationType='RequestResponse', Payload='{}')
+# Calculate size
+def calculate_size(bust, waist, hip):
+    if (bust < 83) & (waist < 68) & (hip < 91):
+        return 'XS'
+    elif (bust >= 83 & bust < 88) & (waist >= 68 & waist < 73) & (hip >= 91 & hip < 96):
+        return 'S'
+    elif (bust >= 88 & bust < 93) & (waist >= 73 & waist < 78) & (hip >= 96 & hip < 101):
+        return 'M'
+    elif (bust >= 93 & bust < 98) & (waist >= 78 & waist < 83) & (hip >= 101 & hip < 106):
+        return 'L'
+    elif (bust >= 98) & (waist >= 83) & (hip >= 106):
+        return 'XL'
 
-    items = result['Payload'].read()
-    return items
 
 # Lambda Functions =================================================================================
 

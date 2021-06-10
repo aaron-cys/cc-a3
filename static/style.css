@@ -93,6 +93,13 @@ h1, h2, h3, h4, h5, a, p, ul, ol, li, label {
     margin-top: 2em;
 }
 
+#size-msg {
+    font-size: 18px;
+    text-align: center;
+    color: #006dd3;
+    margin-top: 1.5em;
+}
+
 /* Button Styling */
 
 #sml-btn {
@@ -105,11 +112,28 @@ h1, h2, h3, h4, h5, a, p, ul, ol, li, label {
     border-radius: 0px;
 }
 
-#add-btn {
+.add-btn {
     padding: 8px 38px;
+    color: #ffffff;
+    border: none;
     border-radius: 0px;
     margin-top: 2em;
     font-family: 'Source Sans Pro', sans-serif;
+    background-color: #343a40;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    -webkit-transform: perspective(1px) translateZ(0);
+    transform: perspective(1px) translateZ(0);
+    -webkit-transition-duration: 0.2s;
+    transition-duration: 0.2s;
+    -webkit-transition-property: transform;
+    transition-property: transform;
+}
+
+.add-btn:hover {
+    transition: 0.3s;
+    background-color: #1f1f1f;
 }
 
 #remove-btn {
@@ -119,6 +143,38 @@ h1, h2, h3, h4, h5, a, p, ul, ol, li, label {
     margin-top: 2em;
     margin-left: 13em;
     font-family: 'Source Sans Pro', sans-serif;
+}
+
+#size-btn {
+    padding: 3px 24px;
+    font-size: 14px;
+    border-radius: 20px;
+    margin-top: -0.46em;
+    font-family: 'Source Sans Pro', sans-serif;
+}
+
+.measure-btn {
+    padding: 5px 26px;
+    font-size: 14px;
+    border-radius: 20px;
+    color: #ffffff;
+    border: none;
+    font-family: 'Source Sans Pro', sans-serif;
+    background-color: #343a40;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    -webkit-transform: perspective(1px) translateZ(0);
+    transform: perspective(1px) translateZ(0);
+    -webkit-transition-duration: 0.2s;
+    transition-duration: 0.2s;
+    -webkit-transition-property: transform;
+    transition-property: transform;
+}
+
+.measure-btn:hover {
+    transition: 0.3s;
+    background-color: #1f1f1f;
 }
 
 .stripe-btn {
@@ -228,4 +284,8 @@ footer {
     color: white;
     text-align: center;
     font-size: 15px;
+}
+
+.custom-input {
+    border: 1px solid #eee;
 }
