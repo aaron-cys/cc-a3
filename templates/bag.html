@@ -1,0 +1,142 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Bag | Arika</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+    {% if u_session %}
+        {% extends 'nav_logged_in.html' %}
+    {% else %}
+        {% extends 'nav_layout.html' %}
+    {% endif %}
+
+    {% block content %}
+
+    <h1 class="stylised-header-left">/ Bag /</h1>
+
+    {% if error %}
+        <p style="margin-left: 11.5em; margin-top: 2em; margin-bottom: 24.5em;">{{ error }}
+    {% endif %}
+
+    {% if bag %}
+    <form method="POST">
+        <input type="submit" class="btn btn-outline-dark" id="remove-btn" value="Empty bag" name="remove" />
+    </form>
+
+    <div class="row" style="margin-top: -1em;">
+        <div class="col">
+            <table class="bag-table" style="margin-bottom: 6em;">
+                {% for p in product_list %}
+                <tr>
+                    <td>
+                        {% if not p['size'] %}
+                            <a href="/product/{{ p[0]['name'] }}"><img class="bag-img" src="{{ p[0]['img_url'] }}"></a></td>
+                        {% endif %}
+                    <td>
+                        <div style="font-size: 18px; margin-top: -2.5em;">
+                            {% if not p[0]['size'] %}
+                                <p style="font-weight: 600;">{{ p[0]['name'] }}</p>
+                                <p style="margin-top: -1em;">${{ p[0]['price'] }}.00</p>
+                            {% endif %}
+                            {% if not p[0]['name'] %}
+                                <p style="margin-top: -7em;">{{ p[0]['size'] }}</p>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="col"></div>
+        <div class="col">
+            <div style="margin-top: 6em;">
+                <p id="sub-header">/ Order Summary /</p>
+                <h5><strong style="margin-right: 4.3em;">Total:</strong> ${{ total }}.00</h5>
+
+                <button class="stripe-btn" id="stripe-btn">Pay with Stripe</button>
+
+                <div id="paypal-total" style="display: none;">{{ total }}</div>
+                <div style="width: 30%; margin-top: 0.7em;" id="paypal-btn"></div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+
+    <footer>
+        <p>/ <a id="footer-header-link" href="/">Arika</a> /</p>
+        <a id="stylised-link" href="/collection">Collection&nbsp;&nbsp;/</a>
+        <a id="stylised-link" href="/women">Women&nbsp;&nbsp;/</a>
+        <a id="stylised-link" href="/men">Men&nbsp;&nbsp;/</a>
+        <a id="stylised-link" href="/new">New</a>
+    </footer>
+
+    <!-- Scripts -->
+
+    <!-- Stripe -->
+    <script type="text/javascript">
+        var stripe = Stripe('pk_test_51HZWy0GvdcoiAyvVMva45A1r74HoaKNxFilbka1JYWZuM0Aa124a9kHyBdi84L7EwUlxnXZ9d8e57LXhlyZOz9zf00XZva9tAf');
+        var checkoutButton = document.getElementById('stripe-btn');
+
+        checkoutButton.addEventListener('click', function () {
+            fetch('/create-stripe-session', {
+                method: 'POST',
+            })
+                .then(function (response) {
+                    console.log(response)
+                    return response.json();
+                })
+                .then(function (session) {
+                    console.log(session)
+                    return stripe.redirectToCheckout({ sessionId: session.sessionId });
+                })
+                .then(function (result) {
+                    if (result.error) {
+                        alert(result.error.message);
+                    }
+                })
+                .catch(function (error) {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+
+    <!-- PayPal -->
+
+    <script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}"></script>
+    <script type="text/javascript">
+        var total = document.getElementById('paypal-total').innerText;
+
+        paypal.Buttons({
+            createOrder: function (data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: total
+                        }
+                    }]
+                });
+            },
+            onApprove: function (data, actions) {
+                return actions.order.capture().then(function (details) {
+                    window.location.replace("http://127.0.0.1:8080/success_paypal");
+                });
+            }
+        }).render('#paypal-btn');
+
+    </script>
+
+    {% endblock %}
+</body>
+
+</html>

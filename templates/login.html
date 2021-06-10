@@ -2,52 +2,61 @@
 <html>
 
 <head>
-  <title>Login</title>
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-  <script src="//netdna.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"></script>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <title>Login</title>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 
 <body>
-  {% extends 'nav_layout.html' %}
+    {% extends 'nav_layout.html' %}
 
-  {% block content %}
-  
-  <h1 class="align-head">Login</h1>
+    {% block content %}
 
-  {% if error %}
-  <p class=error id="error-msg"><strong>Error:</strong> {{ error }}
-  {% endif %}
+    <h1 class="align-head">Login</h1>
 
-  {% block body %}
-  <div class="row mt-4">
-    <div class="col"></div>
-    <div class="col">
-      <form method="POST">
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" class="form-control" name="email" id="email" aria-describedby="email"
-            placeholder="Enter email" value="{{ request.form.email }}" required>
+    {% if error %}
+        <p class=error id="error-msg"><strong>Error: </strong> {{ error }}
+    {% endif %}
+
+    {% block body %}
+    <div class="row mt-4">
+        <div class="col"></div>
+        <div class="col">
+            <form method="POST">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" name="username" id="username" placeholder="Enter Username"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" class="form-control" name="password" id="password"
+                        placeholder="Enter password" required>
+                </div>
+                <p class="form-text text-muted">Don't have an account yet? <a id="minor-link-light"
+                        href="/signup">Register
+                        here</a></p>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-dark mt-4" id="sml-btn" name="login">Log In</button>
+                </div>
+            </form>
+            <p class="mt-3 text-center" style="margin-bottom: -0.25em;">or</p>
+            <form method="POST">
+                <button type="submit" class="btn btn-outline-dark mt-4" id="sml-btn"
+                    style="margin-left: 50%; transform: translate(-50%);" name="google">Login with Google</button>
+            </form>
         </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" class="form-control" name="password" id="password" placeholder="Enter password"
-            value="{{ request.form.password }}" required>
+        <div id="status">
         </div>
-        <p class="form-text text-muted">Don't have an account yet? <a id="minor-link-light" href="/signup">Register here</a></p>
-        <div class="text-center">
-          <button type="submit" class="btn btn-dark mt-4" id="sml-btn">Log In</button>
-        </div>
-      </form>
+        <div class="col"></div>
     </div>
-    <div class="col"></div>
-  </div>
-  {% endblock %}
-  {% endblock %}
+    {% endblock %}
+    {% endblock %}
 
 </body>
 
