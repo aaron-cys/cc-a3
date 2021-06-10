@@ -144,7 +144,8 @@ def gcallback():
     )
 
     session["google_id"] = id_info.get("sub")
-    session["name"] = id_info.get("name")
+    session["google_name"] = id_info.get("name")
+    session["google_email"] = id_info.get("email")
     return redirect(url_for("index"))
 
 # Sign up
