@@ -165,7 +165,7 @@ def signup():
             pnumber = request.form["pnumber"]
             address = request.form["address"]
             password = request.form["password"]
-            logged = signedUp(username, password, gname, fname, email, pnumber, address, valid, error)
+            logged = signedUp(username, password, gname, fname, email, pnumber, address, valid)
             if(logged[0:] == "true"):
                 return redirect(url_for("confirm"))
             else:
@@ -263,6 +263,7 @@ def product(product_name):
     u_session = check_user_session()
     message = None
     product_list = get_products_by_name(product_name)
+    reviews = get_reviews(product_name)
 
     if request.method == 'POST':
         # If user is logged in, then allow them to add product to bag
@@ -276,13 +277,12 @@ def product(product_name):
             session['bag'] = bag
 
             message = "Successfully added to bag!"
-            return render_template('product.html', u_session=u_session, message=message, product_name=product_name, product_list=product_list, bag=bag)
+            return render_template('product.html', reviews=reviews, u_session=u_session, message=message, product_name=product_name, product_list=product_list, bag=bag)
         else:
             message = "Please log in to add to bag"
-            return render_template('product.html', u_session=u_session, message=message, product_name=product_name, product_list=product_list)
-
+            return render_template('product.html', reviews=reviews, u_session=u_session, message=message, product_name=product_name, product_list=product_list)
     else:
-        return render_template('product.html', u_session=u_session, message=message, product_name=product_name, product_list=product_list)
+        return render_template('product.html', reviews=reviews, u_session=u_session, message=message, product_name=product_name, product_list=product_list)
 
 # Bag/cart page
 @application.route('/bag', methods=['GET', 'POST'])
@@ -341,10 +341,8 @@ def create_stripe_session():
         'quantity': 1,
         }],
         mode='payment',
-        # success_url='http://arika-env.eba-f596cma3.ap-southeast-2.elasticbeanstalk.com/success_stripe',
-        # cancel_url='http://arika-env.eba-f596cma3.ap-southeast-2.elasticbeanstalk.com/bag',
-        success_url='http://127.0.0.1:5000/success_stripe',
-        cancel_url='http://127.0.0.1:5000/bag',
+        success_url='http://arika-env.eba-f596cma3.ap-southeast-2.elasticbeanstalk.com/success_stripe',
+        cancel_url='http://arika-env.eba-f596cma3.ap-southeast-2.elasticbeanstalk.com/bag',
     )
     return jsonify({"sessionId": stripe_session["id"]})
 
@@ -441,12 +439,30 @@ def order_history():
         p_list.append(get_products_by_name(o['product']))
         product_list = p_list
 
-    return render_template('order_history.html', u_session=u_session, product_list=product_list)
+    return render_template('order_history.html', u_session=u_session, username=username, product_list=product_list)
+
+# Add review page
+@application.route('/add_review/<username>/<product>', methods=['GET', 'POST'])
+def review(username, product):
+    u_session = check_user_session()
+    success_msg = None
+
+    # Add and store review in database
+    if request.method == "POST":
+        subject = request.form["subject"]
+        message = request.form["message"]
+        rating = int(request.form["rating"])
+        put_review(username, product, subject, message, rating)
+        success_msg = "Review added successfully!"
+        return render_template('review.html', u_session=u_session, success_msg=success_msg, username=username, product=product)
+    else:
+        return render_template('review.html', u_session=u_session, success_msg=success_msg, username=username, product=product)
 
 
 # Working sign up =================================================================================
 def signedUp(username, password, gname, fname, email, pnumber, address, valid):
-    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
+    client = boto3.client('cognito-idp', region_name='ap-southeast-2',
+         aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 
     try:
         client.sign_up(
@@ -486,7 +502,8 @@ def signedUp(username, password, gname, fname, email, pnumber, address, valid):
 
 # confirmation =========================================================================================
 def userConfirm(username, code, valid, error):
-    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
+    client = boto3.client('cognito-idp', region_name='ap-southeast-2',
+         aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 
     try:
         client.confirm_sign_up(
@@ -503,7 +520,8 @@ def userConfirm(username, code, valid, error):
 
 # Check logged in =================================================================================
 def loggedIn(username, password, valid, error):
-    client = boto3.client('cognito-idp', region_name='ap-southeast-2')
+    client = boto3.client('cognito-idp', region_name='ap-southeast-2',
+         aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 
     try:
         response = client.initiate_auth(
@@ -527,7 +545,8 @@ def loggedIn(username, password, valid, error):
 # Get user
 def getUser():
     if 'user' in session:
-        client = boto3.client('cognito-idp', region_name='ap-southeast-2')
+        client = boto3.client('cognito-idp', region_name='ap-southeast-2',
+         aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
         cognito_at = session['cognito_at']
 
         response = client.get_user(
@@ -570,7 +589,7 @@ def getUser():
 def update_popularity(name, popularity, dynamodb=None):
     if not dynamodb:
         dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-2',
-                                  aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+         aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 
     table = dynamodb.Table('product')
     response = table.update_item(

@@ -20,7 +20,7 @@
 
     {% block content %}
 
-    <div class="text-center" style="margin-top: 4em; margin-bottom: 16em;">
+    <div class="text-center" style="margin-top: 4em; margin-bottom: 12em;">
         <div>
             <form method="POST">
                 <table class="col-product-table">
@@ -56,9 +56,40 @@
                 </table>
             </form>
         </div>
-        <div style="margin-top: 8em;">
-            <h2 class="stylised-sub-header">/ Reviews /</h2>
+        {% if reviews %}
+        <div style="margin-top: -3em;">
+            <table class="col-product-table">
+                <tr>
+                    <td>
+                        <h2 class="stylised-sub-header" style="text-align: left;">/ Reviews /</h2>
+                        <div style="width: 30%; text-align: left; margin-top: 3em;">
+                            {% for r in reviews %}
+                            <h5><strong>{{ r['subject'] }}</strong></h5>
+                            <p>{{ r['message'] }}</p>
+                            {% if r['rating'] == 1 %}
+                            <img src="{{ url_for('static', filename = '../static/images/star_1.png') }}"
+                                style="width: auto; height: 20px;">
+                            {% elif r['rating'] == 2 %}
+                            <img src="{{ url_for('static', filename = '../static/images/star_2.png') }}"
+                                style="width: auto; height: 20px;">
+                            {% elif r['rating'] == 3 %}
+                            <img src="{{ url_for('static', filename = '../static/images/star_3.png') }}"
+                                style="width: auto; height: 20px;">
+                            {% elif r['rating'] == 4 %}
+                            <img src="{{ url_for('static', filename = '../static/images/star_4.png') }}"
+                                style="width: auto; height: 20px;">
+                            {% elif r['rating'] == 5 %}
+                            <img src="{{ url_for('static', filename = '../static/images/star_5.png') }}"
+                                style="width: auto; height: 20px;">
+                            {% endif %}
+                                <div style="margin-bottom: 4em;"></div>
+                            {% endfor %}
+                        </div>
+                    </td>
+                </tr>
+            </table>
         </div>
+        {% endif %}
     </div>
 
     <footer>
