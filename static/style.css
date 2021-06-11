@@ -52,6 +52,13 @@ h1, h2, h3, h4, h5, a, p, ul, ol, li, label {
     font-family: 'Playfair Display', sans-serif;
 }
 
+.stylised-sub-header {
+    text-align: center;
+    margin-top: 2em;
+    font-size: 30px;
+    font-family: 'Playfair Display', sans-serif;
+}
+
 .stylised-header-left {
     text-align: left;
     margin-top: 2em;

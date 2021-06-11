@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Order History | Arika</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+    {% if u_session %}
+        {% extends 'nav_logged_in.html' %}
+    {% else %}
+        {% extends 'nav_layout.html' %}
+    {% endif %}
+
+    {% block content %}
+
+    <h1 class="stylised-header-left">/ Order History /</h1>
+
+    <div class="row" style="margin-top: -1em; margin-left: 0.7em;">
+        <div class="col">
+            {% if product_list %}
+            <form method="POST">
+                <table class="bag-table" style="margin-bottom: 6em;">
+                    {% for p in product_list %}
+                    <tr>
+                        <td>
+                            <a href="/product/{{ p[0]['name'] }}"><img class="bag-img" src="{{ p[0]['img_url'] }}"></a></td>
+                        <td>
+                            <div style="font-size: 18px;">
+                                <p style="font-weight: 600;">{{ p[0]['name'] }}</p>
+                                <div style="margin-left: -8.5em; margin-top: -1.5em;">
+                                    <a href="/add_review/{{ username }}/{{ p[0]['name'] }}" class="btn btn-outline-dark" id="remove-btn" name="review">Add Review</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </form>
+            {% else %}
+                <p style="margin-top: 1.5em; margin-left: 10.2em; margin-bottom: 25em;">No orders made yet :(</p>
+            {% endif %}
+        </div>
+        <div class="col"></div>
+        <div class="col"></div>
+    </div>
+
+    <footer>
+        <p>/ <a id="footer-header-link" href="/">Arika</a> /</p>
+        <a id="stylised-link" href="/collection">Collection&nbsp;&nbsp;/</a>
+        <a id="stylised-link" href="/women">Women&nbsp;&nbsp;/</a>
+        <a id="stylised-link" href="/men">Men&nbsp;&nbsp;/</a>
+        <a id="stylised-link" href="/new">New</a>
+    </footer>
+
+    {% endblock %}
+</body>
+
+</html>

@@ -20,36 +20,38 @@
 
     {% block content %}
 
-    <h1 class="stylised-header">/ Profile /</h1>
-    {% if error %}
-    <p class=error id="error-msg"><strong>Error: </strong> {{ error }}
-        {% endif %}
 
         {% block body %}
         <div class="row mt-4">
             <div class="col"></div>
-            <div class="col">
-                {% if userInfo[0] == "cognito" %}
-                    <label for="username"><b>Username:</b></label>
-                    <p id="username">{{ userInfo[1] }}</p>
-                    <label for="gname"><b>Given Name:</b></label>
-                    <p id="gname">{{ userInfo[4] }}</p>
-                    <label for="fname"><b>Family Name:</b></label>
-                    <p id="fname">{{ userInfo[5] }}</p>
-                    <label for="email"><b>Email:</b></label>
-                    <p id="email">{{ userInfo[6] }}</p>
-                    <label for="pnumber"><b>Phone Number:</b></label>
-                    <p id="pnumber">{{ userInfo[3] }}</p>
-                    <label for="address"><b>Address:</b></label>
-                    <p id="address">{{ userInfo[2] }}</p>
-                {% elif userInfo[0] == "google" %}
-                    <label for="gname"><b>Given Name:</b></label>
-                    <p id="gname">{{ userInfo[1].split(" ", 1)[0] }}</p>
-                    <label for="fname"><b>Family Name:</b></label>
-                    <p id="fname">{{ userInfo[1].split(" ", 1)[1] }}</p>
-                    <label for="email"><b>Email:</b></label>
-                    <p id="email">{{ userInfo[2] }}</p>
-                {% endif %}
+            <div class="col" style="margin-left: 15em;">
+                <h1 class="stylised-header text-left">/ Profile /</h1>
+
+                <a href="/order_history" class="btn btn-dark" style="margin-top: 2em;" id="sml-btn" name="order_history">Order History</a>
+
+                <div style="margin-top: 3em;">
+                    {% if userInfo[0] == "cognito" %}
+                        <label for="username"><b>Username:</b></label>
+                        <p id="username">{{ userInfo[1] }}</p>
+                        <label for="gname"><b>Given Name:</b></label>
+                        <p id="gname">{{ userInfo[4] }}</p>
+                        <label for="fname"><b>Family Name:</b></label>
+                        <p id="fname">{{ userInfo[5] }}</p>
+                        <label for="email"><b>Email:</b></label>
+                        <p id="email">{{ userInfo[6] }}</p>
+                        <label for="pnumber"><b>Phone Number:</b></label>
+                        <p id="pnumber">{{ userInfo[3] }}</p>
+                        <label for="address"><b>Address:</b></label>
+                        <p id="address">{{ userInfo[2] }}</p>
+                    {% elif userInfo[0] == "google" %}
+                        <label for="gname"><b>Given Name:</b></label>
+                        <p id="gname">{{ userInfo[1].split(" ", 1)[0] }}</p>
+                        <label for="fname"><b>Family Name:</b></label>
+                        <p id="fname">{{ userInfo[1].split(" ", 1)[1] }}</p>
+                        <label for="email"><b>Email:</b></label>
+                        <p id="email">{{ userInfo[2] }}</p>
+                    {% endif %}
+                </div>
             </div>
             <div class="col"></div>
         </div>

@@ -20,40 +20,76 @@
 
     {% block content %}
 
-    <div class="text-center" style="margin-top: 4em; margin-bottom: 10em;">
-        <form method="POST">
-            <table class="col-product-table">
-                {% for p in product_list %}
-                <tr>
-                    <td><img class="cover-img" src="{{ p['img_url'] }}"></td>
-                    <td>
-                        <div style="margin-top: -5em;">
-                            {% if message %}
-                            <p style="color: rgb(0, 172, 149);">{{ message }}</p>
-                            {% endif %}
-                            <h1 class="stylised-header">/ {{ p['name'] }} /</h1>
-                            <p class="mt-1" style="font-size: 20px;">${{ p['price'] }}.00 / {{ p['colour'] }}</p>
-                            <div style="font-size: 17px; margin-top: 3em; margin-bottom: 2em;">
-                                <select class="form-select form-select-sm mr-2" name="size">
-                                    <option value="XS" selected>XS</option>
-                                    <option value="S">S</option>
-                                    <option value="M">M</option>
-                                    <option value="L">L</option>
-                                    <option value="XL">XL</option>
-                                </select>
+    <div class="text-center" style="margin-top: 4em; margin-bottom: 12em;">
+        <div>
+            <form method="POST">
+                <table class="col-product-table">
+                    {% for p in product_list %}
+                    <tr>
+                        <td><img class="cover-img" src="{{ p['img_url'] }}"></td>
+                        <td>
+                            <div style="margin-top: -5em;">
+                                {% if message %}
+                                <p style="color: rgb(0, 172, 149);">{{ message }}</p>
+                                {% endif %}
+                                <h1 class="stylised-header">/ {{ p['name'] }} /</h1>
+                                <p class="mt-1" style="font-size: 20px;">${{ p['price'] }}.00 / {{ p['colour'] }}</p>
+                                <div style="font-size: 17px; margin-top: 3em; margin-bottom: 2em;">
+                                    <select class="form-select form-select-sm mr-2" name="size">
+                                        <option value="XS" selected>XS</option>
+                                        <option value="S">S</option>
+                                        <option value="M">M</option>
+                                        <option value="L">L</option>
+                                        <option value="XL">XL</option>
+                                    </select>
 
-                                <a href="/size_tool" class="btn btn-outline-dark" id="size-btn">Measure size</a>
+                                    <a href="/size_tool" class="btn btn-outline-dark" id="size-btn">Measure size</a>
+                                </div>
+
+                                <!-- Hidden Input -->
+                                <input type="hidden" value="{{ p['name'] }}" name="product_name">
+                                <input type="submit" class="add-btn" value="Add to bag" name="add" />
                             </div>
-
-                            <!-- Hidden Input -->
-                            <input type="hidden" value="{{ p['name'] }}" name="product_name">
-                            <input type="submit" class="add-btn" value="Add to bag" name="add" />
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </form>
+        </div>
+        {% if reviews %}
+        <div style="margin-top: -3em;">
+            <table class="col-product-table">
+                <tr>
+                    <td>
+                        <h2 class="stylised-sub-header" style="text-align: left;">/ Reviews /</h2>
+                        <div style="width: 30%; text-align: left; margin-top: 3em;">
+                            {% for r in reviews %}
+                            <h5><strong>{{ r['subject'] }}</strong></h5>
+                            <p>{{ r['message'] }}</p>
+                            {% if r['rating'] == 1 %}
+                            <img src="{{ url_for('static', filename = '../static/images/star_1.png') }}"
+                                style="width: auto; height: 20px;">
+                            {% elif r['rating'] == 2 %}
+                            <img src="{{ url_for('static', filename = '../static/images/star_2.png') }}"
+                                style="width: auto; height: 20px;">
+                            {% elif r['rating'] == 3 %}
+                            <img src="{{ url_for('static', filename = '../static/images/star_3.png') }}"
+                                style="width: auto; height: 20px;">
+                            {% elif r['rating'] == 4 %}
+                            <img src="{{ url_for('static', filename = '../static/images/star_4.png') }}"
+                                style="width: auto; height: 20px;">
+                            {% elif r['rating'] == 5 %}
+                            <img src="{{ url_for('static', filename = '../static/images/star_5.png') }}"
+                                style="width: auto; height: 20px;">
+                            {% endif %}
+                                <div style="margin-bottom: 4em;"></div>
+                            {% endfor %}
                         </div>
                     </td>
                 </tr>
-                {% endfor %}
             </table>
-        </form>
+        </div>
+        {% endif %}
     </div>
 
     <footer>
