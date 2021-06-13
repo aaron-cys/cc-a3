@@ -24,7 +24,7 @@
     <h1 class="stylised-header-left">/ Bag /</h1>
 
     {% if error %}
-    <p style="margin-left: 11.5em; margin-top: 2em; margin-bottom: 24.5em;">{{ error }}
+        <p style="margin-left: 11.5em; margin-top: 2em; margin-bottom: 24.5em;">{{ error }}
     {% endif %}
 
     {% if bag %}
@@ -37,11 +37,19 @@
             <table class="bag-table" style="margin-bottom: 6em;">
                 {% for p in product_list %}
                 <tr>
-                    <td><a href="/product/{{ p[0]['name'] }}"><img class="bag-img" src="{{ p[0]['img_url'] }}"></a></td>
                     <td>
-                        <div style="font-size: 18px;">
-                            <p style="font-weight: 600;">{{ p[0]['name'] }}</p>
-                            <p style="margin-top: -1em;">${{ p[0]['price'] }}.00</p>
+                        {% if not p['size'] %}
+                            <a href="/product/{{ p[0]['name'] }}"><img class="bag-img" src="{{ p[0]['img_url'] }}"></a></td>
+                        {% endif %}
+                    <td>
+                        <div style="font-size: 18px; margin-top: -2.5em;">
+                            {% if not p[0]['size'] %}
+                                <p style="font-weight: 600;">{{ p[0]['name'] }}</p>
+                                <p style="margin-top: -1em;">${{ p[0]['price'] }}.00</p>
+                            {% endif %}
+                            {% if not p[0]['name'] %}
+                                <p style="margin-top: -7em;">{{ p[0]['size'] }}</p>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -121,7 +129,7 @@
             },
             onApprove: function (data, actions) {
                 return actions.order.capture().then(function (details) {
-                    window.location.replace("http://127.0.0.1:8080/success_paypal");
+                    window.location.replace("http://arika-env.eba-f596cma3.ap-southeast-2.elasticbeanstalk.com/success_paypal");
                 });
             }
         }).render('#paypal-btn');

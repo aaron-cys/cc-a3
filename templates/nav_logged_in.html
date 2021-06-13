@@ -28,10 +28,10 @@
 
                 <!-- User Features -->
                 <li class="nav-item mr-4" style="margin-top: 0.3em;">
-                    <a href="/bag"><img src="../static/images/bag.png"></a>
+                    <a href="/bag"><img src="{{ url_for('static', filename = '../static/images/bag.png') }}"></a>
                 </li>
                 <li class="nav-item mr-4" style="margin-top: 0.3em;">
-                    <a href="/profile"><img src="../static/images/profile.png"></a>
+                    <a href="/profile"><img src="{{ url_for('static', filename = '../static/images/profile.png') }}"></a>
                 </li>
                 <li class="nav-item mr-2">
                     <a class="nav-link btn btn-dark btn-block text-white" id="sml-btn" href="/logout">Logout</a>
