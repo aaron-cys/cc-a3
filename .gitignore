@@ -1,2 +1,4 @@
 # Python cache
 /app/__pycache__/**
+
+.env

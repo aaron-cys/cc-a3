@@ -22,13 +22,14 @@ from pip._vendor import cachecontrol
 from paypalcheckoutsdk.core import PayPalHttpClient, SandboxEnvironment
 from paypalcheckoutsdk.orders import OrdersCreateRequest
 from paypalhttp import HttpError
+from dotenv import load_dotenv
 
 application = Flask(__name__)
 application.secret_key = "secretKey000"
 
 # AWS Keys
-aws_access_key_id = "AKIAVQHEZJ6A4MBK2V5K"
-aws_secret_access_key = "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"
+aws_access_key_id = os.getenv("AWS_ACCESS_KEY")
+aws_secret_access_key = os.getenv("AWS_SECRET_KEY")
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -41,12 +42,12 @@ flow = Flow.from_client_secrets_file(
                                      )
 
 # Stripe Keys
-pk = "pk_test_51HZWy0GvdcoiAyvVMva45A1r74HoaKNxFilbka1JYWZuM0Aa124a9kHyBdi84L7EwUlxnXZ9d8e57LXhlyZOz9zf00XZva9tAf"
-stripe.api_key = "sk_test_51HZWy0GvdcoiAyvVu8NzEmoMEA2s8RyR2fpNPeP4DGxOzziuTDvsvmUuwG3YgUhEgPgeqvLnLNLf3QAUXLCq6rpT00pr221LWg"
+pk = os.getenv("STRIPE_PK")
+stripe.api_key = os.getenv("STRIPE_SK")
 
 # PayPal Keys
-paypal_client_id = "AWsOkuVbFzlYZeH7oEDr7LiiRR_9NMkEYPraKjf5m8m-SpnmgO-TFhIA53WNnwwvMyWPDO91kWNAbQcT"
-paypal_sk = "EB7kT36J2GGfvIk6_5OWsBO-rePeJSkPYmgZG8ZbT38NMfZFhNpWcE5_nTmtpzDa9T7tUIAo-XzqqC3s"
+paypal_client_id = os.getenv("PAYPAL_CLIENT_ID")
+paypal_sk = os.getenv("PAYPAL_SK")
 environment = SandboxEnvironment(client_id=paypal_client_id, client_secret=paypal_sk)
 client = PayPalHttpClient(environment)
 
