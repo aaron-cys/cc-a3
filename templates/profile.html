@@ -44,6 +44,8 @@
                         <label for="address"><b>Address:</b></label>
                         <p id="address">{{ userInfo[2] }}</p>
                     {% elif userInfo[0] == "google" %}
+                        <label for="username"><b>Username:</b></label>
+                        <p id="username">{{ userInfo[2].split("@", 1)[0] }}</p>
                         <label for="gname"><b>Given Name:</b></label>
                         <p id="gname">{{ userInfo[1].split(" ", 1)[0] }}</p>
                         <label for="fname"><b>Family Name:</b></label>
