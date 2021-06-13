@@ -355,6 +355,8 @@ def success_stripe():
 
     if userInfo[0] == "cognito":
         username = userInfo[1]
+    elif userInfo[0] == "google":
+        username = userInfo[2].split("@", 1)[0]
 
     if 'bag' in session:
         bag = session['bag']
@@ -433,6 +435,8 @@ def order_history():
 
     if userInfo[0] == "cognito":
         username = userInfo[1]
+    elif userInfo[0] == "google":
+        username = userInfo[2].split("@", 1)[0]
 
     order_list = get_orders(username)
     product_list = []
