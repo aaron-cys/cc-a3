@@ -393,6 +393,8 @@ def success_paypal():
 
     if userInfo[0] == "cognito":
         username = userInfo[1]
+    elif userInfo[0] == "google":
+        username = userInfo[2]
 
     if 'bag' in session:
         bag = session['bag']
